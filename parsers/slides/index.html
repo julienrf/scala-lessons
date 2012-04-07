@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Parsers</title>
+  <script src='http://html5slides.googlecode.com/svn/trunk/slides.js'></script>
+  <meta charset="utf-8">
+</head>
+
+<body style="display: none">
+
+<section class="slides layout-widescreen">
+
+<article>
+  <h1>Parsing in Scala</h1>
+</article>
+
+<article>
+  <h1>Why write a parser?</h1>
+  <ul class="build">
+    <li>Data transformation
+      <ul class="build">
+        <li>Database query result (Anorm)</li>
+      </ul>
+    </li>
+    <li>DSL compiler (Play’s routes)</li>
+  </ul>
+</article>
+
+<article>
+  <h3>What is a context-free language?</h3>
+  <ul class="build">
+    <li>A language <strong>described</strong> by <strong>rules</strong> of form:</li>
+    <li><code>V &rarr; w</code></li>
+    <li>Where <code>V</code> is a nonterminal symbol and <code>w</code> is a string of terminals or nonterminals (or can be empty)
+    <li>e.g. the rule <code>S &rarr; bS | a</code> recognizes sentences “a”, “ba”, “bba”, etc.
+    <li>BNF-like syntax can describe rules using operators:
+      <ul class="build">
+        <li>alternation: <code>|</code>
+        <li>option: <code>?</code>
+        <li>repetition: <code>*</code>
+      </ul>
+    </li>
+  </ul>
+</article>
+
+<article>
+  <h1>Exercise 1</h1>
+  <p>Write a grammar describing the language of arithmetic expressions (with operators +, -, *, /).</p>
+  <p>Examples of well formed expressions: “2 + 3”, “42 * (5 - 2)”</p>
+</article>
+
+<article>
+  <h1>Parser combinators</h1>
+  <ul class="build">
+    <li>An embedded DSL to write parsers for algebraic languages</li>
+    <li><code>term &rarr; '(' expr ')' | number</code></li>
+    <li><code>def term = "("~expr~")" | number</code></li>
+  </ul>
+</article>
+
+<article>
+  <h3>Where’s the magic?</h3>
+  <ul class="build">
+    <li><code>val term = "("~expr~")" | number</code></li>
+    <li><code>term</code>, <code>expr</code> and <code>number</code> are <code>Parser</code>s</li>
+    <li><code>Parser[T]</code> has methods to combine itself with other parsers</li>
+    <li><code>def ~ [A](p: Parser[A]): Parser[T~A]</code></li>
+    <li><code>def | (p: Parser[T]): Parser[T]</code></li>
+    <li><code>def * : Parser[List[T]]</code></li>
+  </ul>
+</article>
+
+<article>
+  <h3>Combinators in action</h3>
+  <ul class="build">
+    <li><code>def route = method ~ path ~ action</code></li>
+    <li><code>def value = sym | const</code></li>
+    <li><code>def valDef = ident ~ type?</code></li>
+    <li><code>def tag = name ~ attrs*</code></li>
+  </ul>
+</article>
+
+<article>
+  <h1>Exercise 2</h1>
+  <p>Implement a parser for the language defined in Exercise 1</p>
+</article>
+
+<article>
+  <h3><code>Parser[<strong>T</strong>]</code>?</h3>
+  <ul class="build">
+    <li><code>Parser[T] extends (Input => ParseResult[T])</code></li>
+    <li><code>case class Success[T](result: T) extends ParseResult[T]</code></li>
+    <li><code>Parser[String]</code>: produces a <code>String</code></li>
+    <li><code>Parser[Int]</code>: produces an <code>Int</code></li>
+    <li><code>Parser[Ast]</code>: produces an <code>Ast</code></li>
+  </ul>
+</article>
+
+<article>
+  <h3>Implement a parser</h3>
+  <pre>
+    val myParser = Parser { input =>
+      ...
+      result
+    }
+  </pre>
+  <pre>
+    val myParser = elem("digit", c => c.isDigit)
+  </pre>
+</article>
+
+<article>
+  <h3><code>Parsers</code> trait</h3>
+  <ul class="build">
+    <li>Generic <code>Parser[T]</code> abstract class</li>
+    <li><code>Elem</code> abstract type: kind of input element</li>
+    <li><code>class RegexParsers extends Parsers</code>
+      <ul class="build">
+        <li>Defines <code>Elem = Char</code>
+        <li>Defines an implicit conversion from <code>String</code> to <code>Parser[String]</code>
+      </ul>
+    </li>
+  </ul>
+</article>
+
+<article>
+  <h1>Exercise 3</h1>
+  <p>Re-implement the alternative composition combinator <code>|</code></p>
+</article>
+
+<article>
+  <h3>Transform the input</h3>
+  <ul class="build">
+    <li>Usually you parse text and want to produce an AST of the document</li>
+    <li>Hopefully, <code>Parser[_]</code> is a <em>monad</em></li>
+    <li>Thus, they have <code>map</code> and <code>flatMap</code> methods</li>
+    <li>And their symbolic equivalent: <code>^^</code> and <code>&gt;&gt;</code></li>
+  </ul>
+</article>
+
+<article>
+  <h3>Example of transformation</h3>
+  <pre>
+  def number: Parser[String] = "[0-9]+".r
+  </pre>
+  <p>Transformation from <code>String</code> to <code>Int</code></p>
+  <pre>
+  def number: Parser[Int] = "[0-9]+".r.map { str => str.toInt }
+  </pre>
+  <p>Same transformation, using the symbolic operator</p>
+  <pre>
+  def number: Parser[Int] = "[0-9]+".r ^^ { str => str.toInt }
+  </pre>
+</article>
+
+<article>
+  <h1>Exercise 4</h1>
+  <p>Write an interprete for the language defined in Exercise 1</p>
+</article>
+
+<article>
+  <h1>Exercise 5</h1>
+  <p>Write a compiler for a subset of the <a href="http://lesscss.org">Less</a> language</p>
+</article>
+
+</section>
+</body>
+</html>

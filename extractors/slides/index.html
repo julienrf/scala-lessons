@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Extractors</title>
+  <script src='http://html5slides.googlecode.com/svn/trunk/slides.js'></script>
+  <meta charset="utf-8">
+</head>
+
+<body style="display: none">
+
+<section class="slides layout-widescreen">
+
+<article>
+  <h1>Pattern matching and Extractors</h1>
+</article>
+
+<article>
+  <h3>Plan</h3>
+  <ul class="build">
+    <li>Pattern matching spec (boring part)
+    <li>Exercises: write extractors
+    <li>Use patterns everywhere possible
+  </ul>
+</article>
+
+<article>
+  <h3>Pattern Matching</h3>
+  <pre>
+    x match {
+      case 1     => "one"
+      case "two" => "two"
+      case _     => "many"
+    }
+  </pre>
+  <pre>
+    if (x == 1) {
+      "one"
+    } else if (x == "two") {
+      "two"
+    } else {
+      "many"
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Patterns</h3>
+  <ul class="build">
+    <li>Type
+    <li>Literal and Variable
+    <li>Value
+    <li>Alternative and Guard
+    <li>Constructor and extractor
+    <li>Pattern binder
+    <li>Infix operation and Tuples
+  </ul>
+</article>
+
+<article>
+  <h3>Typed patterns</h3>
+  <p>(<code>instanceof</code> shorthand)</p>
+  <pre>
+    def kindOf(o: Any) = o match {
+      case b: Boolean => "boolean"
+      case n: Int     => "integer"
+      case s: String  => "string"
+      case _          => "unknown"
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Literal and Variable patterns</h3>
+  <p>(can improve algorithms readability)</p>
+  <pre>
+    def fact(n: Int): Int = n match {
+      case 0 => 1
+      case n => n * fact(n - 1)
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Value patterns</h3>
+  <p>(aka “stable identifiers” patterns)</p>
+  <pre>
+    sealed trait Action
+    object Drink extends Action
+    object Eat extends Action
+    object Sleep extends Action
+  
+    def execute(a: Action) = a match {
+      case Drink => "slurp"
+      case Eat   => "crunch"
+      case Sleep => "zzZZz"
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Value patterns (cont’d)</h3>
+  <p>Does this code work?</p>
+  <pre>
+    val mystery = round(random * 3)
+  
+    def guess(n: Long) = n match {
+      case mystery => "Yeepee!"
+      case _       => "Missed…"
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Value patterns (cont’d)</h3>
+  <p>An identifier starting with a <strong>lower-case</strong> letter is a <strong>variable identifier</strong></p>
+  <p>Enclose it with <strong>backquotes</strong> and it will be treated as a <strong>stable identifier</strong>:</p>
+  <pre>
+    val mystery = round(random * 5)
+      
+    def guess(n: Long) = n match {
+      case `mystery` => "Yeepee!"
+      case _         => "Missed…"
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Alternative and Guard</h3>
+  <pre>
+  x match {
+    case 0 | 1 | 2   => "less than 3"
+    case n if n < 10 => "between 3 and 9"
+    case n           => "more than 9"
+  }
+  </pre>
+</article>
+
+<article>
+  <h3>Constructor and extractor patterns</h3>
+  <pre>
+    case class User(name: String,
+                    age: Int,
+                    favThings: List[String])
+    
+    def info(user: User) = user match {
+      case User("Sadek", _, _)         => "You are Sadek!"
+      case User(_, n, _) if n < 18     => "You are under 18!"
+      case User(_, _, List("Hacking")) => "You are a geek!"
+      case _                           => "You are boring!"
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Pattern binders</h3>
+  <pre>
+  case class User(name: String, age: Int)
+  
+  def test(users: List[User]) = users match {
+    case List(single @ User(_, 20)) => single.name
+    case List(_, tail @ _*)         => tail.mkString
+    case Nil                        => "nobody"
+  }
+  </pre>  
+</article>
+
+<article>
+  <h3>Infix operation and Tuple patterns</h3>
+  <pre>
+  sealed trait Op
+  case class And(lhs: Boolean, rhs: Boolean) extends Op
+  case class Or(lhs: Boolean, rhs: Boolean) extends Op
+  
+  def eval(op: Op) = op match {
+    case And(l, r) => l && r
+    case l Or r    => l || r
+  }
+  </pre>
+  <p>Syntactic sugar for <strong>tuples</strong>:</p>
+  <pre>
+    case (Some(a), Some(b)) => a + b
+    case (_, _)             => 0
+  </pre>
+</article>
+
+<article>
+  <h3>Extractor patterns</h3>
+  <pre>
+    user match {
+      case User("Sadek") => "Ok"
+      …
+    }
+  </pre>
+  <p>Is “equivalent” to the following:</p>
+  <pre>
+  if (User.unapply(user) == Some("Sadek")) {
+    "Ok"
+  }
+  </pre>
+</article>
+
+<article>
+  <h3>Extractor patterns</h3>
+  <p>The <code>unapply</code> contract</p>
+  <pre>
+    a: A match {
+      case B(c: C) => …
+    }
+    
+    object B {
+      def unapply(a: A): Option[C] = …
+    }
+  </pre>
+  <pre>
+    a: A match {
+      case B(c: C, d: D) => …
+    }
+    
+    object B {
+      def unapply(a: A): Option[(C, D)] = …
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Exercise 1: Write <code>User.unapply</code></h3>
+  <pre>
+    case class User(email: String, name: String)
+  </pre>
+  <p>Remove the leading <code>case</code> keyword and write the extractor by hand</p>
+  <pre>
+    class User(val email: String, val name: String)
+    
+    object User {
+      def unapply(??): ?? = ??
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Easy! Another one!</h3>
+  <p>Exercise 2: Write <code>User.unapply(json: JsValue)</code></p>
+</article>
+
+<article>
+  <h3>And the last one</h3>
+  <p>Exercise 3: Write an <code>At</code> email extractor conform to this spec:</p>
+  <pre>
+  "foo@bar.com" match {
+    case username At domain => {
+      assert(username == "foo")
+      assert(domain == "bar.com")
+    }
+  }
+  </pre>
+</article>
+
+<article>
+  <h3><code>unapplySeq</code></h3>
+  <pre>
+  xs match {
+    case Several(x1, x2) => …
+    case Several(x1, x2, x3) => …
+  }
+
+  object Several {
+    def unapplySeq(xs: …): Option[Seq[…]] = …
+  }
+  </pre>
+</article>
+
+<article>
+  <h1>Where do patterns work?</h1>
+  <ul class="build">
+    <li>Pattern matching
+      <ul><li>and Pattern matching anonymous functions</ul>
+    <li>Value (and variable) declaration
+    <li><code>for</code> comprehension
+  </ul>
+</article>
+
+<article>
+  <h3>Pattern matching</h3>
+  <p>You know what it is!</p>
+</article>
+
+<article class="smaller">
+  <h3>Pattern matching anonymous functions</h3>
+  <pre>
+  def partial: PartialFunction[Any, String] = {
+    case User(name, age) => name
+  }
+  </pre>
+  <p>is expanded to:</p>
+  <pre>
+  def partial = new PartialFunction[Any, String] {
+    def apply(x: Any): String = x match {
+      case User(name, age) => name
+    }
+    def isDefinedAt(x: Any): Boolean = {
+      case User(name, age) => true
+      case _               => false
+    }
+  }
+  </pre>
+<p>(Works with <code>Function[T,R]</code> too but in this case <strong>be sure</strong> to have an exhaustive pattern matching)</p>
+</article>
+
+<article>
+  <h3>Pattern matching anonymous functions</h3>
+  <pre>
+  def usernames(xs: List[Any]): List[String] = xs collect {
+    case User(name, age) => name
+  }
+  </pre>
+</article>
+
+<article>
+  <h3>Pattern matching anonymous functions</h3>
+  <p>Don’t do this:</p>
+  <pre>
+    def usernames(xs: List[Any]): List[String] = xs map {
+      case User(name, age) => name
+    }
+  </pre>
+</article>
+
+<article>
+  <h3>Value declaration</h3>
+  <pre>
+  scala> val User(_, age) = User("Julien", 25)
+  age: Int = 25
+  </pre>
+</article>
+
+<article>
+  <h3><code>for</code> comprehension</h3>
+  <pre>
+  for (User(_, age) &lt;- users) yield age
+  </pre>
+  <p>is expanded to:</p>
+  <pre>
+  users.map { case User(_, age) => age }
+  </pre>
+</article>
+
+<article>
+  <h3>Exercise 4</h3>
+  <p>With all what you’ve learnt, write a <code>domains</code> function which <strong>takes a list of JSON objects</strong> and <strong>returns all domain names of user’s emails found in the objects</strong>.</p>
+  <pre>
+    val users = List(
+      Js("""{"email": "sdr@zenexity.com", "name": "Sadek"}"""),
+      Js("""{"name": "Guillaume"}"""),
+      Js("""{"email": "julienrf@gmail.com", "name": "Julien"}""")
+    )
+    println(domains(users))
+    // -&gt; List("zenexity.com", "gmail.com")
+   </pre>
+</article>
+
+<article>
+  <h3>What have you learnt?</h3>
+  <ul class="build">
+    <li>How to write <strong>patterns</strong>
+      <ul class="build"><li>using all the different kinds of patterns</ul>
+    </li>
+    <li>How to write <strong>custom extractors</strong>
+      <ul class=build><li>just a matter of an <code>unapply</code> method</ul>
+    </li>
+    <li><strong>Where</strong> to use patterns
+      <ul class=build><li>not only in pattern matching expressions!</ul>
+    </li>
+  </ul>
+</article>
+
+</section>
+</body>
+</html>
