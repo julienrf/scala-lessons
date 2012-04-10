@@ -33,7 +33,7 @@
     <li>A language <strong>described</strong> by <strong>rules</strong> of form:</li>
     <li><code>V &rarr; w</code></li>
     <li>Where <code>V</code> is a nonterminal symbol and <code>w</code> is a string of terminals or nonterminals (or can be empty)
-    <li>e.g. the rule <code>S &rarr; bS | a</code> recognizes sentences “a”, “ba”, “bba”, etc.
+    <li>e.g. the rule <code>S &rarr; a | bS</code> recognizes sentences “a”, “ba”, “bba”, etc.
     <li>BNF-like syntax can describe rules using operators:
       <ul class="build">
         <li>alternation: <code>|</code>
@@ -41,19 +41,20 @@
         <li>repetition: <code>*</code>
       </ul>
     </li>
+    <li>Context-free grammars are powerful enough to describe most languages
   </ul>
 </article>
 
 <article>
   <h1>Exercise 1</h1>
-  <p>Write a grammar describing the language of arithmetic expressions (with operators +, -, *, /).</p>
+  <p>Write a context-free grammar describing the language of arithmetic expressions (with operators +, -, *, /).</p>
   <p>Examples of well formed expressions: “2 + 3”, “42 * (5 - 2)”</p>
 </article>
 
 <article>
   <h1>Parser combinators</h1>
   <ul class="build">
-    <li>An embedded DSL to write parsers for algebraic languages</li>
+    <li>An embedded DSL to write parsers for context-free languages</li>
     <li><code>term &rarr; '(' expr ')' | number</code></li>
     <li><code>def term = "("~expr~")" | number</code></li>
   </ul>
@@ -62,12 +63,13 @@
 <article>
   <h3>Where’s the magic?</h3>
   <ul class="build">
-    <li><code>val term = "("~expr~")" | number</code></li>
+    <li><code>def term = "("~expr~")" | number</code></li>
     <li><code>term</code>, <code>expr</code> and <code>number</code> are <code>Parser</code>s</li>
     <li><code>Parser[T]</code> has methods to combine itself with other parsers</li>
     <li><code>def ~ [A](p: Parser[A]): Parser[T~A]</code></li>
     <li><code>def | (p: Parser[T]): Parser[T]</code></li>
     <li><code>def * : Parser[List[T]]</code></li>
+    <li><code>String</code> literals can implicitly be lifted to <code>Parser[String]</code>
   </ul>
 </article>
 
@@ -78,6 +80,21 @@
     <li><code>def value = sym | const</code></li>
     <li><code>def valDef = ident ~ type?</code></li>
     <li><code>def tag = name ~ attrs*</code></li>
+  </ul>
+</article>
+
+<article>
+  <h3>Design considerations</h3>
+  <ul class="build">
+    <li>Don’t write <em>left-recursive</em> grammars
+    <li><del><code>def expr = expr~"+"~number | number</code></del>
+    <li>Hopefully most languages admit a non-left-recursive grammar
+    <li><code>def expr = number~"+"~expr | number</code>
+  </ul>
+  <ul class="build">
+    <li>Avoid <em>backtracking</em>
+    <li>In the above example, the <code>number</code> parser would run twice if the first alternative failed
+    <li>Use <em>left-factoring</em>: <code>def expr = number~("+"~expr)?</code>
   </ul>
 </article>
 
@@ -106,7 +123,7 @@
     }
   </pre>
   <pre>
-    val myParser = elem("digit", c => c.isDigit)
+    val myParser = elem("digit", char => char.isDigit)
   </pre>
 </article>
 
@@ -125,6 +142,17 @@
 </article>
 
 <article>
+  <h3>Dealing with recursion</h3>
+  <ul class="build">
+    <li>How to build a recursive parser?
+    <li>See how existing combinators handle recursion:
+    <li><code>def a = b~a</code>
+    <li><code>def ~ [A](p: <strong>=></strong> Parser[A])</code>
+    <li>Use <em>by-name</em> parameters to implement a combinator allowing recursion
+  </ul>
+</article>
+
+<article>
   <h1>Exercise 3</h1>
   <p>Re-implement the alternative composition combinator <code>|</code></p>
 </article>
@@ -134,7 +162,7 @@
   <ul class="build">
     <li>Usually you parse text and want to produce an AST of the document</li>
     <li>Hopefully, <code>Parser[_]</code> is a <em>monad</em></li>
-    <li>Thus, they have <code>map</code> and <code>flatMap</code> methods</li>
+    <li>Thus, it has <code>map</code> and <code>flatMap</code> methods</li>
     <li>And their symbolic equivalent: <code>^^</code> and <code>&gt;&gt;</code></li>
   </ul>
 </article>
