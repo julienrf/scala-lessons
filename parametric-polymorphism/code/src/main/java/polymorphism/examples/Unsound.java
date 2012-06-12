@@ -9,7 +9,8 @@ public class Unsound {
 
     public static class Crocodile extends Animal {}
 
-    public static void crash() {
+
+    public static void yeah() {
 
         Mammal[] mammals = new Mammal[] {new Cat()};
 

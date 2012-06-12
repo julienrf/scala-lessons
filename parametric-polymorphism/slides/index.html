@@ -21,26 +21,18 @@
 
   <article>
     <ul class="build">
-      <li>We need to concatenate two lists of numbers</li>
-      <li><code>def concat(l1: List[Int], l2: List[Int]) = l1 ++ l2</code></li>
-      <li>We need to concatenate two lists of strings</li>
-      <li><code>def concat(l1: List[String], l2: List[String]) = l1 ++ l2</code></li>
-      <li>If we could <strong>abstract</strong> over the list content type, we could write <code>concat</code> <strong>once</strong></li>
-      <li><code>def concat[A](l1: List[A], l2: List[A]) = l1 ++ l2</code></li>
+      <li>We need to compute the maximum of two numbers</li>
+      <li>
+        <pre>def max(x: BigInteger, y: BigInteger, o: Ordering[BigInteger]): BigInteger =
+  if (o.compare(x, y) > 0) x else y</pre>
+      </li>
+      <li>We need to compute the maximum of two strings</li>
+      <li><pre>def max(x: String, y: String, o: Ordering[String]): String =
+  if (o.compare(x, y) > 0) x else y</pre></li>
+      <li>If we could <strong>abstract</strong> over the compared data type, we could write <code>max</code> <strong>once</strong></li>
+      <li><pre>def max[A](x: A, y: A, o: Ordering[A]): A =
+  if (o.compare(x, y) > 0) x else y</pre></li>
       <li><code>A</code> is a <em>type parameter</em></li>
-    </ul>
-  </article>
-
-  <article>
-    <h3>It’s far <strong>easier</strong> in JavaScript</h3>
-    <pre>
-      var concat = function (l1, l2) {
-        return l1.concat(l2)
-      };
-    </pre>
-    <ul class="build">
-      <li><code>concat</code> can be used with <strong>any</strong> array</li>
-      <li>Yes. Preserving type information brings more verbosity and complexity in methods signatures (see e.g. Scalaz…)</li>
     </ul>
   </article>
 
@@ -79,20 +71,6 @@ val ys: List[Int] = xs map { x => x + 1 }</pre>
   </article>
 
   <article>
-    <h3>Higher-kinds can be abstracted over</h3>
-    <pre>trait Functor[F[_]] {
-  def fmap[A, B](fa: F[A], f: A => B): F[B]
-}
-
-val listFunctor = new Functor[List] {
-  def fmap[A, B](xs: List[A], f: A => B): List[B] = xs map f
-}
-
-def inc[F[_]](fx: F[Int], Functor: Functor[F]): F[Int] =
-  Functor.fmap[Int, Int](fx, x => x + 1)</pre>
-  </article>
-
-  <article>
     <h3>Higher-kinds are also called <em>type constructors</em></h3>
     <ul class="build">
       <li><code>trait F[A]</code></li>
@@ -101,9 +79,9 @@ def inc[F[_]](fx: F[Int], Functor: Functor[F]): F[Int] =
     </ul>
     <ul class="build">
       <li>Let's define the following method:</li>
-      <li><code>def f[F[_]](mammal: F[Mammal]): Unit</code></li>
-      <li>Can I call it with a <code>F[Cat]</code> value?</li>
-      <li>Can I call it with a <code>F[Any]</code> value?</li>
+      <li><code>def f(mammal: List[Mammal]): Unit</code></li>
+      <li>Can I call it with a <code>List[Cat]</code> value?</li>
+      <li>Can I call it with a <code>List[Animal]</code> value?</li>
       <li>No, for both</li>
       <li>But both would be possible if we changed the <strong>variance</strong> of <code>F</code></li>
     </ul>
@@ -132,13 +110,6 @@ def inc[F[_]](fx: F[Int], Functor: Functor[F]): F[Int] =
     <h1>What is a subtype?</h1>
     <ul class="build">
       <li><code>A'</code> is a subtype of <code>A</code> if values of type <code>A'</code> may be <strong>substituted</strong> for values of type <code>A</code></li>
-      <li>Remember the <em>Liskov Substitution Principle</em>
-        <ul class="build">
-          <li>Preconditions cannot be strengthened in a subtype</li>
-          <li>Postconditions cannot be weakened in a subtype</li>
-          <li>Invariants must be preserved in a subtype</li>
-        </ul>
-      </li>
     </ul>
   </article>
 
@@ -167,7 +138,7 @@ def inc[F[_]](fx: F[Int], Functor: Functor[F]): F[Int] =
     </ul>
     <ul class="build">
       <li>A setter is basically a function taking a <strong>parameter</strong> and returning nothing</li>
-      <li>We know that functions are contravariant on their return type</li>
+      <li>We know that functions are contravariant on their arguments</li>
       <li><strong>Setters are contravariant</strong></li>
     </ul>
     <ul class="build">
@@ -215,15 +186,15 @@ trait Get[-A] {
   </article>
 
   <article>
-    <h3>You can now fully understand the following code</h3>
-    <pre>trait PartialFunction[-A, +B] extends (A ⇒ B) {
-  def orElse[A1 &lt;: A, B1 &gt;: B](that: PartialFunction[A1, B1]): PartialFunction[A1, B1]
-}</pre>
+    <h1>Exercise 4</h1>
+    <p>Write, for the trait <code>List[A]</code>, a method <code>prepend</code> which returns a new list containing the list prepended by a value.</p>
   </article>
 
   <article>
-    <h1>Exercise 4</h1>
-    <p>Write, for the trait <code>List[A]</code>, a method <code>++</code> which returns the concatenation of the list with another list, passed as a parameter.</p>
+    <h3>You can now fully understand the following code!</h3>
+    <pre>trait PartialFunction[-A, +B] extends (A ⇒ B) {
+  def orElse[A1 &lt;: A, B1 &gt;: B](that: PartialFunction[A1, B1]): PartialFunction[A1, B1]
+}</pre>
   </article>
 
 </section>
