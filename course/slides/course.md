@@ -13,8 +13,6 @@
 
 ## Functional Programming
 
-### Functional idioms
-
 - immutability
 
 - higher-order functions
@@ -66,6 +64,7 @@ class ExprParser extends RegexParsers {
 }
 ```
 
+
 # Start programming
 
 ## Read-Eval-Print Loop
@@ -74,7 +73,7 @@ The quickest way to try Scala is to use the REPL (Read-Eval-Print-Loop)
 
 ```bash
 $ scala
-Welcome to Scala version 2.9.2 (Java HotSpot(TM) 64-Bit Server VM, Java 1.7.0_17).
+Welcome to Scala version 2.10.1 (Java HotSpot(TM) 64-Bit Server VM, Java 1.7.0_17).
 Type in expressions to have them evaluated.
 Type :help for more information.
 
@@ -89,6 +88,7 @@ scala>
 ## What is a program made of?
 
 - A program is the **expression** of the solution of a given **problem**
+
 - We need a way to define and reference the elements of the **problem domain**
 
 ## The Simplest Program Elements
@@ -114,15 +114,7 @@ scala> "Hello " ++ "world!"
 res2: String = Hello world!
 ```
 
-## First Building Blocks
-
-- The programming language gives us the ability to:
-
-    - write primitive expressions representing **simple elements** (`42`, `"Hello "`, etc.)
-
-    - **combine** these expressions (using operators)
-
-## (Slightly) Bigger Examples
+## (Slightly) Less Simple Examples
 
 - What is the circumference of a circle with a radius of 10?
 
@@ -182,13 +174,17 @@ scala> circumference(20)
 res8: Double = 125.6636
 ```
 
-## First Abstraction Mechanisms
+## Summary: Elements of Programming
 
-- The programming language gives us the ability to:
+- The programming language gives us ways to:
+
+    - write literal expressions representing **simple elements** (`42`, `"Hello "`, etc.)
+
+    - **combine** these expressions (using operators)
 
     - **abstract** over expressions, by introducing a name to refer to an expression
 
-    - **abstract** over the variable parts of a computation, by making them function parameters
+    - abstract over the variable parts of a computation, by making them function parameters
 
 ## Exercises
 
@@ -208,6 +204,26 @@ res9: Double = 25.0
 ```scala
 def abs(x: Double) = if (x < 0) -x else x
 ```
+
+- Boolean expressions can be combined with `||` (disjonction), `&&` (conjonction), `!` (negation) and the comparison operations (e.g. `==`)
+
+    - `true || false == !false`
+
+## Basic Types
+
+Scala predefines some data types:
+
+`Int`
+: a 32-bit signed integer
+
+`Double`
+: a 64-bit IEEE-754 floating point number
+
+`Boolean`
+: boolean values (`true` or `false`)
+
+`String`
+: character strings
 
 ## Syntax Summary (Value Definitions)
 
@@ -233,7 +249,7 @@ def fact(n: Int): Int =
   else n * fact(n - 1)
 ```
 
-## Exercises
+## Exercise
 
 * Write a function `fib(n: Int): Int` that returns the `n`^th^ element of the Fibonacci sequence.
 
@@ -253,13 +269,13 @@ scala> fib(3)
 res13: Int = 2
 ```
 
-## Evaluation model? Termination? Linear and Tail Recursion? Boolean Expressions?
+## Evaluation model? Termination? Linear and Tail Recursion?
 
 ### TODO
 
-## More Exercises?
+## Exercise
 
-### TODO
+* Write a function `sumInts(a: Int, b: Int): Int` that returns the sum of the integers between `a` and `b`
 
 
 # Making Real Programs
@@ -330,7 +346,7 @@ $ scala Main
     - `> test` to run the tests of your project
     - `> compile` to compile your project (without running it)
 
-## Using an IDE
+## Using an Integrated Development Environment
 
 Why use an IDE?
 
@@ -343,6 +359,8 @@ Why use an IDE?
 - on-the-fly compilation
 
 - code refactoring
+
+- type information
 
 ## Using [Eclipse](http://www.eclipse.org)
 
@@ -469,13 +487,76 @@ def euler1 = {
 }
 ```
 
+## Euler Problem #1 Variant
+
+Consider the following variant of the previous problem, returning the sum of the squares of all the multiples of 3 or 5 below 1000:
+
+```scala
+def euler1Variant = {
+
+  def loop(n: Int, sum: Int): Int = {
+
+    def isMultipleOf3Or5 = n % 3 == 0 || n % 5 == 0
+
+    if (n < 1000) loop(n + 1, if (isMultipleOf3Or5) sum + n * n else sum)
+    else sum
+  }
+
+  loop(1, 0)
+}
+```
+
+> - Note the strong **similarities** with the `euler1` function
+
+## Abstract Over Computations
+
+- Can you write a more general version of the `euler1` function that could be reused to define `euler1` and `euler1Variant` specific cases?
+
+- Yes. You can abstract over the variable computation part of these functions by making it a parameter.
+
+## Abstract Over Computations (cont’d)
+
+```scala
+def euler1Generic(f: Int => Int) = {
+
+  def loop(n: Int, sum: Int): Int = {
+
+    def isMultipleOf3Or5 = n % 3 == 0 || n % 5 == 0
+
+    if (n < 1000) loop(n + 1, if (isMultipleOf3Or5) sum + f(n) else sum)
+    else sum
+  }
+
+  loop(1, 0)
+}
+```
+
+You can define `euler1` and `euler1Variant` in terms of `euler1Generic`:
+
+```scala
+def euler1 = euler1Generic(n => n)
+def euler1Variant = euler1Generic(n => n * n)
+```
+
 ## Higher-Order Functions
 
+- A function that takes another function as a parameter (or returns a function) is a **higher-order function**
+
+- The type `(T1, …, Tn) => R` is the type of a function that takes `n` parameters (of type `T1`, …, `Tn`) and returns a value of type `R`
+- The value `(t: T1, … tn: Tn) => <expr>` is a function that takes `n` parameters (`t1`, …, `tn`) and which body is `<expr>`
+
+- The type `Int => Int` is the type of a function that takes an `Int` and returns an `Int`
+- The value `(a: Int, b: Int) => a + b` is a function that takes two parameters `a` and `b` and returns their sum
+
+## Exercises
+
+* Write a function `sumSquares(a: Int, b: Int): Int` that returns the sum of the square of all the integer between `a` and `b`
+
+* Generalize `sumSquares` and the previously written `sumInts` function into a higher-order `sum` function
+
+* Rewrite `sumInts` and `sumSquares` in terms of `sum`
+
 ## Data Abstraction
-
-### TODO Remind standard types (Int, Double, String, Boolean)
-
-## Abstract Data Types
 
 You want to design a program manipulating **three dimensional vectors**
 
@@ -547,9 +628,9 @@ val w = u.crossProduct(v)
 
 ## Exercise
 
-### TODO
+* Add a `plus(that: Vector3D): Vector3D` method that adds two vectors
 
-## Generalizations and Encapsulation
+## Inheritance and Encapsulation
 
 ## Traits
 
@@ -581,7 +662,7 @@ IntList
 
 # ???
 
-## Encapsulation, Abstraction, Modularity, Composition
+## Encapsulation, Abstraction, Modularity, Composition, Generalization
 
 ### Abstraction
 
