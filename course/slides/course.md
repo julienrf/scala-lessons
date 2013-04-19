@@ -15,7 +15,7 @@
 
 - immutability
 
-- higher-order functions
+- higher-order functions, currying
 
 - pattern matching, algebraic data types
 
@@ -37,6 +37,10 @@ val ys = xs map inc // List(2, 3, 4)
 - single inheritance
 
 - mixin-based composition mechanism
+
+## Statically Typed
+
+TODO
 
 ## Flexible Syntax
 
@@ -114,7 +118,7 @@ scala> "Hello " ++ "world!"
 res2: String = Hello world!
 ```
 
-## (Slightly) Less Simple Examples
+## The Simplest Program Elements (cont’d)
 
 - What is the circumference of a circle with a radius of 10?
 
@@ -130,11 +134,11 @@ scala> 3.14159 * 10 * 10
 res4: Double = 314.159
 ```
 
+> - *Hard-coded* values makes the program hard to **read** and to **maintain**
+
 ## Naming
 
-- *Hard-coded* values makes the program hard to **read** and to **maintain**
-
-- Hopefully we can use names to refer to values:
+- Hopefully we can define **names** to refer to values:
 
 ```scala
 scala> val radius = 10
@@ -174,7 +178,9 @@ scala> circumference(20)
 res8: Double = 125.6636
 ```
 
-## Summary: Elements of Programming
+> - By taking the radius as a parameter, the `circumference` function is more **general** than the previous version computing the circumference of circles with radius of 10 only
+
+## Elements of Programming
 
 - The programming language gives us ways to:
 
@@ -184,7 +190,7 @@ res8: Double = 125.6636
 
     - **abstract** over expressions, by introducing a name to refer to an expression
 
-    - abstract over the variable parts of a computation, by making them function parameters
+- These means of composition and abstraction give you **expression power** to generalize programs and combine them
 
 ## Exercises
 
@@ -195,15 +201,17 @@ scala> square(5)
 res9: Double = 25.0
 ```
 
-* Rewrite the `area` function to use `square`
+* Rewrite the `area` function using `square`
 
-## Conditional Expressions
+## Conditional and Boolean Expressions
 
 - What is the absolute value of a number `x`?
 
 ```scala
 def abs(x: Double) = if (x < 0) -x else x
 ```
+
+- Boolean literals: `true` and `false`
 
 - Boolean expressions can be combined with `||` (disjonction), `&&` (conjonction), `!` (negation) and the comparison operations (e.g. `==`)
 
@@ -225,7 +233,7 @@ Scala predefines some data types:
 `String`
 : character strings
 
-## Syntax Summary (Value Definitions)
+## Syntax Summary
 
 ### Definitions
 
@@ -239,6 +247,22 @@ Scala predefines some data types:
 
 - `<name>(<expr>, <expr>, …)`
 
+## Evaluation model
+
+Consider the following program:
+
+```scala
+def foo = 1 + 1
+val bar = 1 + 1
+```
+
+What is the difference between `foo` and `bar`?
+
+> - The right hand side of `def`s is evaluated **each** time their name appear in an expression
+>     - `foo` refers to the expression `1 + 1`
+> - The right hand side of `val`s is evaluated **once**, at the definition site
+>     - `bar` refers to the value `2`
+
 ## Recursive Functions
 
 - What is the factorial of an integer `n`?
@@ -248,6 +272,31 @@ def fact(n: Int): Int =
   if (n <= 1) 1
   else n * fact(n - 1)
 ```
+
+> - The return type of recursive functions can not be inferred, it must be explicit
+
+## Functional Loops
+
+```scala
+scala> fact(4)
+res9: Int = 24
+```
+
+- What are the evaluation steps of the `fact(4)` expression?
+
+## Termination
+
+Is the evaluation process guaranteed to terminate?
+
+```scala
+def loop: Nothing = loop
+```
+
+<!--
+## Linear and Tail Recursion
+
+TODO
+-->
 
 ## Exercise
 
@@ -269,13 +318,9 @@ scala> fib(3)
 res13: Int = 2
 ```
 
-## Evaluation model? Termination? Linear and Tail Recursion?
-
-### TODO
-
 ## Exercise
 
-* Write a function `sumInts(a: Int, b: Int): Int` that returns the sum of the integers between `a` and `b`
+* Write a function `sumInts(a: Int, b: Int): Int` that returns the sum of all the integers between `a` and `b`
 
 
 # Making Real Programs
@@ -319,7 +364,7 @@ $ scala Main
 
 - What if my project depends on a third-party library?
 
-- How to handle a whole project lifecycle (testing, packaging, publishing, …)?
+- How to handle a whole project lifecycle (testing, packaging, publishing, etc.)?
 
 ## sbt
 
@@ -352,15 +397,15 @@ Why use an IDE?
 
 - syntax highlighting
 
-- auto-completion
+- type information
 
 - code navigation
 
 - on-the-fly compilation
 
-- code refactoring
+- auto-completion
 
-- type information
+- code refactoring
 
 ## Using [Eclipse](http://www.eclipse.org)
 
@@ -426,7 +471,7 @@ fib(6)
 ```
 
 
-# Scaling Abstractions
+# Encapsulation and Abstract Data Types
 
 ## [Euler Problem #1](http://projecteuler.net/problem=1)
 
@@ -487,178 +532,311 @@ def euler1 = {
 }
 ```
 
-## Euler Problem #1 Variant
+## Abstract Data Types
 
-Consider the following variant of the previous problem, returning the sum of the squares of all the multiples of 3 or 5 below 1000:
+You want to design a program manipulating **complex numbers**
+
+A complex number has a *real part* and an *imaginary part*, it can be expressed in the form *a + b **i***
+
+Complex numbers can be added, substracted, multiplied, divided, etc.
+
+To compute the product of two complex numbers, you could write the following functions:
 
 ```scala
-def euler1Variant = {
+def mulR(xR: Double, xI: Double, yR: Double, yI: Double) =
+  xR * yR - xI * yI
+def mulI(xR: Double, xI: Double, yR: Double, yI: Double) =
+  xI * yR + xR * yI
+```
 
-  def loop(n: Int, sum: Int): Int = {
+## ???
 
-    def isMultipleOf3Or5 = n % 3 == 0 || n % 5 == 0
+And you could use these functions as follows:
 
-    if (n < 1000) loop(n + 1, if (isMultipleOf3Or5) sum + n * n else sum)
-    else sum
-  }
+```scala
+val xR = 1; val xI = 2 // x = 1 + 2 i
+val yR = 3; val yI = 4 // y = 3 + 4 i
 
-  loop(1, 0)
+val zR = mulR(xR, xI, yR, yI)
+val zI = mulI(xR, xI, yR, yI)
+```
+
+> - Note how this design forces you to repeat things
+
+> - Such a code would be very **error prone** and **hard to read and maintain**
+
+## Defining Classes
+
+You can capture the concept of a complex number into a **class**:
+
+```scala
+class Complex(a: Double, b: Double) {
+
+  val real = a
+  val imag = b
+
+  def mul(that: Complex) =
+    new Complex(
+      this.real * that.real - this.imag * that.imag,
+      this.imag * that.real + this.real * that.imag
+    )
+}
+
+val x = new Complex(1, 2)
+val y = new Complex(3, 4)
+val z = x.mul(y)
+```
+
+## The `Complex` Class
+
+- `Complex` is a **type**
+- `Complex` is also a **constructor**
+    - `a` and `b` are constructor parameters
+    - New **objects** are created by calling the constructor prefixed by `new`
+- `mul`, `real` and `imag` are **members** of the `Complex` type
+    - Members can be selected with the syntax `<object>.<member>`
+    - More precisely, `mul` is a **method** because it is a function member
+- On the inside of a class, the name `this` refers to the object on which the code is called
+
+## Exercise
+
+* Add a `plus(that: Complex): Complex` method that adds two complex numbers
+
+* Add a `pow(e: Int): Complex` method that raises a complex number to the power of `b`
+
+## Polar Coordinates
+
+Alternatively, a complex number could be represented using **polar coordinates**: *(r, &phi;)* where *r* is its *absolute value* and *&phi;* its *argument*
+
+```scala
+class Complex(r: Double, phi: Double) {
+
+  val abs = r
+  val arg = phi
+
+  def mul(that: Complex) =
+    new Complex(
+      this.abs * that.abs,
+      this.arg + that.arg
+    )
+
 }
 ```
 
-> - Note the strong **similarities** with the `euler1` function
+## Data Abstraction
+
+For users point of view, multiplying two complex numbers would be the same no matter which implementation is used:
+
+```scala
+z = x.mul(y)
+```
+
+How to abstract over the implementation of the `Complex` type?
+
+## Abstract Classes and Members
+
+```scala
+abstract class Complex {
+  def real: Double
+  def imag: Double
+  def abs: Double
+  def arg: Double
+  def mul(that: Complex): Complex
+}
+```
+
+- `Complex` is an **abstract class**
+
+- Its members are **abstract** (they have no body)
+
+## Implementing an Abstract Class
+
+```scala
+class ComplexRectangular(a: Double, b: Double) extends Complex {
+
+  val real = a
+  val imag = b
+  def abs = math.sqrt(a * a + b * b)
+  def arg = math.atan2(a, b)
+
+  def mul(that: Complex) =
+    new Complex(
+      this.real * that.real - this.imag * that.imag,
+      this.imag * that.real + this.real * that.imag
+    )
+}
+```
+
+- `ComplexRectangular` **implements** the `Complex` abstract type by implementing its abstract members
+
+## Implementating an Abstract Class (cont’d)
+
+```scala
+class ComplexPolar(r: Double, phi: Double) extends Complex {
+
+  def real = r * math.cos(phi)
+  def imag = r * math.sin(phi)
+  val abs = r
+  val arg = phi
+
+  def mul(that: Complex) =
+    new Complex(
+      this.abs * that.abs,
+      this.arg + that.arg
+    )
+}
+```
+
+## Dynamic Method Dispatch
+
+Consider the following program:
+
+```scala
+def mulComplexes(x: Complex, y: Complex) = x.mul(y)
+```
+
+At runtime, the implementation of the concrete type of `x` (`ComplexRectangular` or `ComplexPolar`) is called
+
+This process is named **dynamic method dispatch**
+
+## Abstract Members, Encapsulation and Modularity
+
+- Abstract members achieve **data abstraction**, another kind of encapsulation
+
+- Encapsulation allows the construction of **abstraction layers**
+
+- It is a key principle to achieve **modularity**: the underlying implementation can change without affecting users
+
+## Substitution
+
+## Overriding
+
+## Parameters vs. Abstract Members
+
+## Recursive Types
+
+A **recursive type** is a data type that may contain values of the same type
+
+They can encode data structures that can grow to arbitrary size (lists, trees, etc.)
+
+Consider for example the following type `Ints` encoding an infinite stream of `Int` values:
+
+```scala
+abstract class Ints {
+  def value: Int
+  def next: Ints
+}
+```
+
+```scala
+def printSomeInts(ints: Ints) = {
+  println(ints.value)
+  println(ints.next.next.next.value)
+}
+```
+
+## Recursive Types (2)
+
+You can generate an infinite stream of zeros:
+
+```scala
+class Zeros extends Ints {
+  val value = 0
+  def next = new Zeros
+}
+
+printSomeInts(new Zeros) // prints “0”, “0”
+```
+
+## Recursive Types (3)
+
+You can generate an infinite stream of successive numbers:
+
+```scala
+class Succs(val value: Int) extends Ints {
+  def next = new Succs(value + 1)
+}
+
+printSomeInts(new Succs(0)) // prints “0”, “3”
+```
+
+## Exercise
+
+Implement an abstract data type representing a sequence of integers of arbitrary size:
+
+```scala
+abstract class IntList {
+  def add(n: Int): IntList
+  def toString: String
+}
+```
+
+The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2 :: Nil"` for the sequence {1, 2}
+
+
+# Higher-Order Functions and Functions Composition
 
 ## Abstract Over Computations
 
-- Can you write a more general version of the `euler1` function that could be reused to define `euler1` and `euler1Variant` specific cases?
+### Exercise
 
-- Yes. You can abstract over the variable computation part of these functions by making it a parameter.
+* Add to `IntList` a method `sum: Int` that returns the sum of the elements of the list
 
-## Abstract Over Computations (cont’d)
+* Then add a method `product: Int` that returns the product of the elements of the list
 
-```scala
-def euler1Generic(f: Int => Int) = {
+> * Note the strong **similarities** between `sum` and `product`
 
-  def loop(n: Int, sum: Int): Int = {
+> * Can you write a more general function that could be reused to define `sum` and `product`?
 
-    def isMultipleOf3Or5 = n % 3 == 0 || n % 5 == 0
-
-    if (n < 1000) loop(n + 1, if (isMultipleOf3Or5) sum + f(n) else sum)
-    else sum
-  }
-
-  loop(1, 0)
-}
-```
-
-You can define `euler1` and `euler1Variant` in terms of `euler1Generic`:
-
-```scala
-def euler1 = euler1Generic(n => n)
-def euler1Variant = euler1Generic(n => n * n)
-```
+> * TODO More on why it is difficult without higher-order functions
 
 ## Higher-Order Functions
 
 - A function that takes another function as a parameter (or returns a function) is a **higher-order function**
 
 - The type `(T1, …, Tn) => R` is the type of a function that takes `n` parameters (of type `T1`, …, `Tn`) and returns a value of type `R`
-- The value `(t: T1, … tn: Tn) => <expr>` is a function that takes `n` parameters (`t1`, …, `tn`) and which body is `<expr>`
+    - `Int => Int` is the type of a function that takes an `Int` and returns an `Int`
 
-- The type `Int => Int` is the type of a function that takes an `Int` and returns an `Int`
-- The value `(a: Int, b: Int) => a + b` is a function that takes two parameters `a` and `b` and returns their sum
-
-## Exercises
-
-* Write a function `sumSquares(a: Int, b: Int): Int` that returns the sum of the square of all the integer between `a` and `b`
-
-* Generalize `sumSquares` and the previously written `sumInts` function into a higher-order `sum` function
-
-* Rewrite `sumInts` and `sumSquares` in terms of `sum`
-
-## Data Abstraction
-
-You want to design a program manipulating **three dimensional vectors**
-
-A vector has three coordinates (`x`, `y` and `z`)
-
-To compute the cross product of two vectors you could write the following three functions:
-
-```scala
-def crossProductX(y1: Int, z1: Int, y2: Int, z2: Int) = y1 * z2 - z1 * y2
-def crossProductY(z1: Int, x1: Int, z2: Int, x2: Int) = z1 * x2 - x1 * z2
-def crossProductZ(x1: Int, y1: Int, x2: Int, y2: Int) = x1 * y2 - y1 * x2
-```
-
-## ???
-
-And you could call these functions as follows to compute the cross product of the vectors `(1, 0, 0)` and `(0, 1, 0)`:
-
-```scala
-val x1 = 1; val y1 = 0; val z1 = 0
-val x2 = 0; val y2 = 1; val z2 = 0
-
-val x3 = crossProductX(y1, z1, y2, z2)
-val y3 = crossProductY(z1, x1, z2, x2)
-val z3 = crossProductZ(x1, y1, x2, y2)
-```
-
-> - Note how the constituting parts of a same vector would be distant of each other
-
-> - Such a code would be very **error prone** and **hard to read and maintain**
-
-## Defining Classes
-
-You can capture the concept of a three dimensional vector into a **class**:
-
-```scala
-class Vector3D(val x: Int, val y: Int, val z: Int) {
-
-  def crossProduct(that: Vector3D) =
-    new Vector3D(
-      this.y * that.z - this.z * that.y,
-      this.z * that.x - this.x * that.z,
-      this.x * that.y - this.y * that.x
-    )
-
-}
-
-val u = new Vector3D(1, 0, 0)
-val v = new Vector3D(0, 1, 0)
-val w = u.crossProduct(v)
-```
-
-## The Vector3D Class
-
-- `Vector3D` is a **type**
-
-- It is also a **constructor**
-
-    - `x`, `y` and `z` are constructor parameters
-
-    - New **objects** are created by calling the constructor prefixed by `new`
-
-- `crossProduct` is a **member** of the `Vector3D` class
-
-    - `x`, `y` and `z` are also members
-
-    - Members can be selected with the syntax `<object>.<member>`
-
-    - More precisely, `crossProduct` is a **method** because it is a function member
+- The value `(t: T1, …, tn: Tn) => <expr>` is a function that takes `n` parameters (`t1`, …, `tn`) and which body is `<expr>`
+    - `(a: Int, b: Int) => a + b` is a function that takes two parameters `a` and `b` and returns their sum
 
 ## Exercise
 
-* Add a `plus(that: Vector3D): Vector3D` method that adds two vectors
+* Generalize `sum` and `product` by adding a method `fold(z: Int, op: (Int, Int) => Int): Int` that returns the application of the operation `op` to all the elements of the list (or `z` in the case of the empty list)
+    * You should then be able to rewrite `sum` and `product` as follows:
 
-## Inheritance and Encapsulation
+        ```scala
+        def sum = fold(0, (s, n) => s + n)
+        def product = fold(1, (p, n) => p * n)
+        ```
+
+## Functions Composition
+
+Consider the following functions:
+
+```scala
+val length = (text: String) => text.length
+val isEven = (n: Int) => n % 2 == 0
+```
+
+You can use them to define another function that tests if a text has an even length:
+
+```scala
+val hasEvenLength = (text: String) => isEven(length(text))
+```
+
+But a shorter way consists in writing that `hasEvenLength` is the composition of the functions `isEven` and `length`:
+
+```scala
+val hasEvenLength = isEven compose length
+```
+
+
+# Type Composition
 
 ## Traits
 
-## Dynamic Method Dispatch
-
-## Encapsulation, Maintainability and Modularity
-
-- Encapsulation is a key principle for writing **maintainable** programs, by allowing the construction of **abstraction barriers**
-
-- Encapsulation enables **modularity**: the underlying implementation can change without affecting users
-
-## Abstract Methods, Substitution, Overriding
-
-## Parameters vs. Abstract Methods
-
-## Recursive Types
-
-## Exercise
-
-IntList
-
-
-# Composition
-
-## Functions Composition (so late?)
-
-## Traits Composition
-
+## Factories
 
 # ???
 
@@ -683,20 +861,123 @@ operators &rarr; function composition &rarr; traits
 
 ## Singleton Objects
 
+## Exercise
+
+* Add the alias `++` for the `concat` member of `IntList`
+
+* Add the alias `::` for the `add` member of `IntList`
+
+* Use a singleton object to represent the empty sequence
+
 
 # Type ???
 
 ## Type Abstraction
 
+Until now, you saw how to abstract over values
+
+It is also possible to abstract over **types**
+
+## Exercise
+
+* Add a method `forAll(p: Int => Boolean): Boolean` to `IntList`, that tests if the predicate `p` holds for all the elements of the list
+
+* Then add a method `hasEvenSize: Boolean` that tests if the list has an even size
+
+* Generalize `forAll` and `hasEvenSize` by adding a method `foldBool(z: Boolean, op: (Boolean, Int) => Boolean): Boolean`
+
+> * Note that the implementations of `fold` and `foldBool` are **exactly the same**.
+
+> * Is it possible to write only one `fold` function that would work with both `Int` and `Boolean`?
+
 ## Type Polymorphism
+
+Look at the type signatures of `fold` and `foldBool`:
+
+```scala
+(Int,     (Int, Int)     => Int)     => Int
+(Boolean, (Boolean, Int) => Boolean) => Boolean
+```
+
+You could add a `foldString` with the following type signature:
+
+```scala
+(String,  (String, Int)  => String)  => String
+```
+
+It always follows this pattern:
+
+```scala
+(A, (A, Int) => A) => A
+```
 
 ## Polymorphic Functions
 
-### Upper and Lower Bounds
+Functions can have **type parameters**:
+
+```scala
+def fold[A](z: A, op: (A, Int) => A): A
+```
+
+- `A` is a type parameter
+
+- You can then call `fold` as follows:
+
+```scala
+def sum = fold[Int](0, (s, n) => s + n)
+def forAll(p: Int => Boolean) = fold[Boolean](true, (b, n) => b && p(n))
+```
+
+## Exercise
+
+* Make `fold` polymorphic
+
+* Rewrite `sum`, `product`, `forAll` and `hasEvenSize` in terms of `fold`
+
+## Upper and Lower Bounds
+
+## Exercise
+
+* Implement an abstract data type representing a list of `String` elements:
+
+```scala
+abstract class StringList {
+  def add(str: String): StringList
+  def toString: String
+}
+```
+
+> - Note the strong similarities with `IntList`
+>      - As usual, duplicated code should be interpreted as a signal that something should be generalized
+>      - In this case, you want to abstract over the type of the elements of the list
 
 ## Polymorphic Types
 
-### Type Constructors, Variance
+Types can have type parameters
+
+```scala
+abstract class List[A] {
+  def add(element: A): List[A]
+  def toString: String
+}
+```
+
+> - `List` is a **type constructor**: it takes a type as parameter and yields another type
+>     - E.g. `List[Int]`, `List[String]`, etc.
+
+## Exercise
+
+* Write a polymorphic `List[A]` data type:
+
+```scala
+abstract class List[A] {
+  def add(element: A): List[A]
+  def fold[B](z: B, op: (B, A) => A): A
+  def toString: String
+}
+```
+
+## Variance
 
 ## Type Composition
 
@@ -742,6 +1023,8 @@ operators &rarr; function composition &rarr; traits
 
 ## Path-Dependent Types
 
+
 # Bibliography
 
-## SICP, coursera
+## SICP, coursera, pfpl
+
