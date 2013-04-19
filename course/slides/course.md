@@ -760,6 +760,8 @@ class Succs(val value: Int) extends Ints {
 printSomeInts(new Succs(0)) // prints “0”, “3”
 ```
 
+## `Any`
+
 ## Exercise
 
 Implement an abstract data type representing a sequence of integers of arbitrary size:
@@ -830,6 +832,8 @@ But a shorter way consists in writing that `hasEvenLength` is the composition of
 ```scala
 val hasEvenLength = isEven compose length
 ```
+
+## Currying?
 
 
 # Type Composition
@@ -979,6 +983,8 @@ abstract class List[A] {
 
 ## Variance
 
+`List[Int]` and `List[String]` are different types produced by the application of the types `Int` and `String` to the `List` type constructor
+
 ## Type Composition
 
 ## Tuple Types
@@ -997,13 +1003,15 @@ abstract class List[A] {
 
 ## Algebraic Data Types, Structural Identity, Pattern Matching
 
-## Implicit Parameters, Typeclasses
+Note that `emptyList[Int].add(1) == emptyList[Int].add(1)` evaluates to `false`
+
+## Typeclasses, Implicit Parameters
+
+Extensibility
 
 ## `for` Notation
 
 ## Lazy vals and by-name Parameters
-
-## Currying?
 
 
 # Standard Library
