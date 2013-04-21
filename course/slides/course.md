@@ -5,42 +5,28 @@
 
 ## Why Scala?
 
-- > A problem **well put** is **half solved**.
+> A problem **well put** is **half solved**.
 
-- > A **scalable** programming language is one in which the **same** concepts can describe **small** as well as **large** parts.
+> A **scalable** programming language is one in which the **same** concepts can describe **small** as well as **large** parts.
 
-> - Scala is a **general purpose programming language**
 
-## Functional Programming
+## Scala in a Few (Technical) Words
 
-- immutability
+Scala is a **general purpose programming language**
 
-- higher-order functions, currying
+Scala is **object oriented**
 
-- pattern matching, algebraic data types
+Scala is **statically typed**
+
+Scala integrates a lot of features from the **functional programming** paradigm
+
+## Hello World in Scala
 
 ```scala
-val inc = (x: Int) => x + 1
-val xs = List(1, 2, 3)
-val ys = xs map inc // List(2, 3, 4)
+object Main extends App {
+  println("Hello, World!")
+}
 ```
-
-## Object Oriented
-
-- every value is an object
-    - `42.toString`
-
-- every operator is a method call
-    - `1 + 2` &hArr; `1.+(2)`
-    - `1 to 10` &hArr; `1.to(10)`
-
-- single inheritance
-
-- mixin-based composition mechanism
-
-## Statically Typed
-
-TODO
 
 ## Flexible Syntax
 
@@ -233,6 +219,9 @@ Scala predefines some data types:
 `String`
 : character strings
 
+`Unit`
+: absence of meaningful value
+
 ## Syntax Summary
 
 ### Definitions
@@ -289,7 +278,7 @@ res9: Int = 24
 Is the evaluation process guaranteed to terminate?
 
 ```scala
-def loop: Nothing = loop
+def loop: ??? = loop
 ```
 
 <!--
@@ -473,11 +462,15 @@ fib(6)
 
 # Encapsulation and Abstract Data Types
 
-## [Euler Problem #1](http://projecteuler.net/problem=1)
+## Exercise
+
+### [Euler Problem #1](http://projecteuler.net/problem=1)
 
 > If we list all the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6 and 9. The sum of these multiples is 23.
 >
 > Find the sum of all the multiples of 3 or 5 below 1000.
+
+## Solution
 
 ```scala
 def euler1: Int = loop(1, 0)
@@ -667,7 +660,8 @@ class ComplexRectangular(a: Double, b: Double) extends Complex {
 }
 ```
 
-- `ComplexRectangular` **implements** the `Complex` abstract type by implementing its abstract members
+- `ComplexRectangular` **extends** `Complex`
+- `ComplexRectangular` **implements** the abstract members of `Complex`
 
 ## Implementating an Abstract Class (cont’d)
 
@@ -699,21 +693,92 @@ At runtime, the implementation of the concrete type of `x` (`ComplexRectangular`
 
 This process is named **dynamic method dispatch**
 
+## Parameters vs. Abstract Members
+
+Consider this part of the `ComplexRectangular` definition:
+
+```scala
+class ComplexRectangular(a: Double, b: Double) extends Complex {
+  val real = a
+  val imag = b
+}
+```
+
+  - The `real` member implementation just aliases the `a` parameter (the same applies to `imag` and `b`)
+
+>   - You can declare `real` and `imag` members in the class constructor parameters list:
+>
+>     ```scala
+>     class ComplexRectangular(val real: Double, val imag: Double) extends Complex
+>     ```
+>
+>   - Note that `def` members can not be declared as parameters
+
 ## Abstract Members, Encapsulation and Modularity
 
-- Abstract members achieve **data abstraction**, another kind of encapsulation
+- Abstract members achieve **data abstraction**, that is a kind of encapsulation
 
 - Encapsulation allows the construction of **abstraction layers**
 
 - It is a key principle to achieve **modularity**: the underlying implementation can change without affecting users
 
-## Substitution
+## Specialization
 
-## Overriding
+`Complex` is the **superclass** of `ComplexRectangular` and `ComplexPolar`
 
-## Parameters vs. Abstract Members
+`ComplexRectangular` and `ComplexPolar` are **subclasses** of `Complex`
+
+You could also say that `ComplexRectangular` and `ComplexPolar` are more **specialized** than `Complex`
+
+When specializing a type, you can:
+
+- Implement abstract members
+- Add new members
+- Redefine non-abstract members
+
+A subclass **conforms** to its superclass, so it can be used everywhere the superclass is needed
+
+## Adding a Member to a Base Class
+
+```scala
+class SemiGroup {
+  def append(a: Int, b: Int) = a + b
+}
+
+class Monoid extends SemiGroup {
+  def zero = 0
+}
+
+class Group extends Monoid {
+  def inverse(a: Int) = -a
+}
+```
+
+## Redefining a Member of a Base Class
+
+```scala
+class LoggingSemiGroup extends SemiGroup {
+  override def append(a: Int, b: Int) = {
+    println(s"Calling append($a, $b)")
+    super.append(a, b)
+  }
+}
+```
+
+- Redefine a member using `override`
+- You can still access to the base implementation using `super`
+
+## Standard Class Hierarchy
+
+![Scala Class Hierarchy](ScalaClassHierarchy.png)
+
+## Overloading
+
+TODO
 
 ## Recursive Types
+
+TODO Motivating problem
 
 A **recursive type** is a data type that may contain values of the same type
 
@@ -759,8 +824,6 @@ class Succs(val value: Int) extends Ints {
 
 printSomeInts(new Succs(0)) // prints “0”, “3”
 ```
-
-## `Any`
 
 ## Exercise
 
@@ -833,7 +896,9 @@ But a shorter way consists in writing that `hasEvenLength` is the composition of
 val hasEvenLength = isEven compose length
 ```
 
-## Currying?
+## Currying and Partial Application
+
+TODO
 
 
 # Type Composition
@@ -841,6 +906,7 @@ val hasEvenLength = isEven compose length
 ## Traits
 
 ## Factories
+
 
 # ???
 
@@ -855,30 +921,11 @@ names &rarr; functions &rarr; blocks visibility &rarr; higher-order functions &r
 operators &rarr; function composition &rarr; traits
 
 
-# Object Orientation
-
-## Every Value is an Object
-
-## Functions are Objects
-
-## Infix Notations for Methods
-
-## Singleton Objects
-
-## Exercise
-
-* Add the alias `++` for the `concat` member of `IntList`
-
-* Add the alias `::` for the `add` member of `IntList`
-
-* Use a singleton object to represent the empty sequence
-
-
 # Type ???
 
 ## Type Abstraction
 
-Until now, you saw how to abstract over values
+Until now, you saw only how to abstract over values
 
 It is also possible to abstract over **types**
 
@@ -940,6 +987,8 @@ def forAll(p: Int => Boolean) = fold[Boolean](true, (b, n) => b && p(n))
 
 ## Upper and Lower Bounds
 
+TODO
+
 ## Exercise
 
 * Implement an abstract data type representing a list of `String` elements:
@@ -957,7 +1006,7 @@ abstract class StringList {
 
 ## Polymorphic Types
 
-Types can have type parameters
+Types can have type parameters:
 
 ```scala
 abstract class List[A] {
@@ -992,6 +1041,69 @@ abstract class List[A] {
 ## Intersection Types
 
 
+# Object Orientation
+
+## Every Value is an Object
+
+`42.toString`
+
+`"foo".length`
+
+## Functions are Objects
+
+### Definition
+
+```scala
+trait Function[-T, +R] {
+  def apply(parameter: T): R
+}
+```
+
+The `Int => String` type is a shorthand for the `Function[Int, String]` type
+
+The `(x: Int) => x + 1` expression is a shorthand for the following expression:
+
+```scala
+new Function[Int, Int] {
+  def apply(x: Int) = x + 1
+}
+```
+
+## Functions are Objects (2)
+
+### Application
+
+`<name>(t1, t2, …)` is a shorthand for `<name>.apply(t1, t2, …)`
+
+- Note that the underlying value does not need to extend `Function`, it only needs to have an `apply` method
+
+## Infix Notations for Methods
+
+Any expression of the form `<value>.<member>(<parameter>)` can be written `<value> <member> <parameter>`
+
+## Singleton Objects
+
+TODO
+
+```scala
+object Plop
+```
+
+## Top-Level Definitions
+
+Singleton objects and classes (or traits) are the only allowed top-level definitions
+
+Any other definition (`val`, `def`) must be nested within a top-level definition
+
+## Exercise
+
+* Add the alias `++` for the `concat` member of `List`
+
+* Add the alias `::` for the `add` member of `List`
+
+* Use a singleton object to represent the empty sequence
+
+
 # Assignment
 
 ## `var`
@@ -1011,8 +1123,9 @@ Extensibility
 
 ## `for` Notation
 
-## Lazy vals and by-name Parameters
+## Lazy vals and By-Name Parameters
 
+Remember the evaluation strategy for parameters?
 
 # Standard Library
 
@@ -1021,6 +1134,8 @@ Extensibility
 ## Failure Handling
 
 ### Option, Either, Try, `try`/`catch`/`throw`
+
+## Types Hierarchy
 
 
 # Type Members
@@ -1031,6 +1146,8 @@ Extensibility
 
 ## Path-Dependent Types
 
+
+# Testing
 
 # Bibliography
 
