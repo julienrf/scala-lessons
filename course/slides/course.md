@@ -10,7 +10,7 @@
 > A **scalable** programming language is one in which the **same** concepts can describe **small** as well as **large** parts.
 
 
-## Scala in a Few (Technical) Words
+## Scala in a Few Words
 
 Scala is a **general purpose programming language**
 
@@ -18,9 +18,9 @@ Scala is **object oriented**
 
 Scala is **statically typed**
 
-Scala integrates a lot of features from the **functional programming** paradigm
+Scala enables both **functional programming** and **imperative programming**
 
-## Hello World in Scala
+## Hello World
 
 ```scala
 object Main extends App {
@@ -104,7 +104,7 @@ scala> "Hello " ++ "world!"
 res2: String = Hello world!
 ```
 
-## The Simplest Program Elements (cont’d)
+## The Simplest Program Elements (2)
 
 - What is the circumference of a circle with a radius of 10?
 
@@ -178,9 +178,17 @@ res8: Double = 125.6636
 
 - These means of composition and abstraction give you **expression power** to generalize programs and combine them
 
+## Abstraction Principle
+
+> Each significant piece of functionality in a program should be implemented in just one place in the source code.
+>
+> Where similar functions are carried out by distinct pieces of code, it is generally beneficial to combine them into one by **abstracting** out the varying parts.
+
+Benjamin C. Pierce, in Types and Programming Languages (2002)
+
 ## Exercises
 
-* Write a function `square(x: Double): Double` that returns the square of its parameter `x`
+* Write a function `square(x: Double): Double` that returns the square of `x`
 
 ```scala
 scala> square(5)
@@ -273,6 +281,23 @@ res9: Int = 24
 
 - What are the evaluation steps of the `fact(4)` expression?
 
+>   - Evaluation steps:
+>
+>     ```scala
+>     fact(4)
+>     if (4 <= 1) 1 else 4 * fact(4 - 1)
+>     4 * fact(3)
+>     4 * if (3 <= 1) 1 else 3 * fact(3 - 1)
+>     4 * 3 * fact(2)
+>     4 * 3 * if (2 <= 1) 1 else 2 * fact(2 - 1)
+>     4 * 3 * 2 * fact(1)
+>     4 * 3 * 2 * if (1 <= 1) 1 else 1 * fact(1 - 1)
+>     4 * 3 * 2 * 1
+>     12 * 2 * 1
+>     24 * 1
+>     24
+>     ```
+
 ## Termination
 
 Is the evaluation process guaranteed to terminate?
@@ -330,7 +355,7 @@ object Main extends App {
 }
 ```
 
-## Making an Executable Program from a Source File (cont’d)
+## Making an Executable Program from a Source File (2)
 
 - Compile it:
 
@@ -392,37 +417,21 @@ Why use an IDE?
 
 - on-the-fly compilation
 
-- auto-completion
-
 - code refactoring
 
-## Using [Eclipse](http://www.eclipse.org)
+## Eclipse and IntelliJ
+
+### [Eclipse](http://www.eclipse.org)
 
 - Install the [Eclipse Scala plugin](http://scala-ide.org/)
 
-- Create a file `my-project/project/plugins.sbt` with the following content:
+- Use the [sbt eclipse plugin](https://github.com/typesafehub/sbteclipse)
 
-```scala
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.1.2")
-```
+### [IntelliJ IDEA](http://www.jetbrains.com/idea/)
 
-- Run the `eclipse` sbt command
+- Install the IntelliJ Scala plugin
 
-- In Eclipse: `File` &rarr; `Import…` &rarr; `Existing Projects into Workspace` and select your project directory
-
-## Using [IntelliJ IDEA](http://www.jetbrains.com/idea/)
-
-- Install the [IntelliJ Scala plugin](http://plugins.jetbrains.com/plugin/?id=1347)
-
-- Create a file `my-project/project/plugins.sbt` with the following content:
-
-```scala
-addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.4.0")
-```
-
-- Run the `gen-idea` sbt command
-
-- In IntelliJ: `File` &rarr; `Open…` and select your project directory
+- Use the [sbt idea plugin](https://github.com/mpeltonen/sbt-idea)
 
 ## Organizing your Code
 
@@ -444,7 +453,7 @@ object Fibonacci {
 }
 ```
 
-## Organizing your Code (cont’d)
+## Organizing your Code (2)
 
 - Refer to a value by its *fully qualified name*:
 
@@ -525,13 +534,15 @@ def euler1 = {
 }
 ```
 
-## Abstract Data Types
+## Modeling Complex Numbers
 
 You want to design a program manipulating **complex numbers**
 
 A complex number has a *real part* and an *imaginary part*, it can be expressed in the form *a + b **i***
 
 Complex numbers can be added, substracted, multiplied, divided, etc.
+
+## Modeling Complex Numbers (2)
 
 To compute the product of two complex numbers, you could write the following functions:
 
@@ -542,9 +553,7 @@ def mulI(xR: Double, xI: Double, yR: Double, yI: Double) =
   xI * yR + xR * yI
 ```
 
-## ???
-
-And you could use these functions as follows:
+And you could use them as follows:
 
 ```scala
 val xR = 1; val xI = 2 // x = 1 + 2 i
@@ -558,7 +567,7 @@ val zI = mulI(xR, xI, yR, yI)
 
 > - Such a code would be very **error prone** and **hard to read and maintain**
 
-## Defining Classes
+## Abstract Data Types
 
 You can capture the concept of a complex number into a **class**:
 
@@ -574,11 +583,20 @@ class Complex(a: Double, b: Double) {
       this.imag * that.real + this.real * that.imag
     )
 }
-
-val x = new Complex(1, 2)
-val y = new Complex(3, 4)
-val z = x.mul(y)
 ```
+
+>   - Referring to a complex number requires only one symbol
+>
+>     ```scala
+>     val x = new Complex(1, 2)
+>     val y = new Complex(3, 4)
+>     ```
+>
+>   - Multiplying two complex numbers requires only one operation
+>
+>     ```scala
+>     val z = x.mul(y)
+>     ```
 
 ## The `Complex` Class
 
@@ -595,7 +613,7 @@ val z = x.mul(y)
 
 * Add a `plus(that: Complex): Complex` method that adds two complex numbers
 
-* Add a `pow(e: Int): Complex` method that raises a complex number to the power of `b`
+* Add a `pow(e: Int): Complex` method that raises a complex number to the power of `e`
 
 ## Polar Coordinates
 
@@ -660,10 +678,11 @@ class ComplexRectangular(a: Double, b: Double) extends Complex {
 }
 ```
 
-- `ComplexRectangular` **extends** `Complex`
+- `ComplexRectangular` **extends** (or **subclasses**) `Complex`
+- `Complex` is a **superclass** of `ComplexRectangular`
 - `ComplexRectangular` **implements** the abstract members of `Complex`
 
-## Implementating an Abstract Class (cont’d)
+## Implementating an Abstract Class (2)
 
 ```scala
 class ComplexPolar(r: Double, phi: Double) extends Complex {
@@ -724,9 +743,7 @@ class ComplexRectangular(a: Double, b: Double) extends Complex {
 
 ## Specialization
 
-`Complex` is the **superclass** of `ComplexRectangular` and `ComplexPolar`
-
-`ComplexRectangular` and `ComplexPolar` are **subclasses** of `Complex`
+`Complex` is more **general** than `ComplexRectangular` and `ComplexPolar`
 
 You could also say that `ComplexRectangular` and `ComplexPolar` are more **specialized** than `Complex`
 
@@ -766,7 +783,11 @@ class LoggingSemiGroup extends SemiGroup {
 ```
 
 - Redefine a member using `override`
-- You can still access to the base implementation using `super`
+- You can still refer to the base implementation using `super`
+
+## Members Visibility
+
+TODO
 
 ## Standard Class Hierarchy
 
@@ -778,7 +799,7 @@ TODO
 
 ## Recursive Types
 
-TODO Motivating problem
+<!-- TODO Motivating problem -->
 
 A **recursive type** is a data type that may contain values of the same type
 
@@ -903,25 +924,19 @@ TODO
 
 # Type Composition
 
+## Tuple Types
+
+## Intersection Types
+
 ## Traits
 
 ## Factories
 
 
-# ???
-
-## Encapsulation, Abstraction, Modularity, Composition, Generalization
-
-### Abstraction
-
-names &rarr; functions &rarr; blocks visibility &rarr; higher-order functions &rarr; traits
-
-### Composition
-
-operators &rarr; function composition &rarr; traits
+# String Interpolation
 
 
-# Type ???
+# Type Abstraction
 
 ## Type Abstraction
 
@@ -930,6 +945,8 @@ Until now, you saw only how to abstract over values
 It is also possible to abstract over **types**
 
 ## Exercise
+
+<!-- FIXME Use `identity(n: Int): Int`, `identity(b: Boolean): Boolean` as an example? -->
 
 * Add a method `forAll(p: Int => Boolean): Boolean` to `IntList`, that tests if the predicate `p` holds for all the elements of the list
 
@@ -962,7 +979,7 @@ It always follows this pattern:
 (A, (A, Int) => A) => A
 ```
 
-## Polymorphic Functions
+## Universal Types
 
 Functions can have **type parameters**:
 
@@ -970,24 +987,30 @@ Functions can have **type parameters**:
 def fold[A](z: A, op: (A, Int) => A): A
 ```
 
-- `A` is a type parameter
+- `A` is a **type parameter**, `fold` is a **polymorphic function**
 
-- You can then call `fold` as follows:
+You can then call `fold` as follows:
 
 ```scala
 def sum = fold[Int](0, (s, n) => s + n)
 def forAll(p: Int => Boolean) = fold[Boolean](true, (b, n) => b && p(n))
 ```
 
+>   - Note that if you use the following signature you can help the type inference mechanism and omit the result type in most cases:
+>
+>     ```scala
+>     def fold[A](z: A)(op: (A, Int) => A): A
+>     ```
+>
+>     ```scala
+>     def sum = fold(0)((s, n) => s + n)
+>     ```
+
 ## Exercise
 
 * Make `fold` polymorphic
 
 * Rewrite `sum`, `product`, `forAll` and `hasEvenSize` in terms of `fold`
-
-## Upper and Lower Bounds
-
-TODO
 
 ## Exercise
 
@@ -1004,7 +1027,7 @@ abstract class StringList {
 >      - As usual, duplicated code should be interpreted as a signal that something should be generalized
 >      - In this case, you want to abstract over the type of the elements of the list
 
-## Polymorphic Types
+## Type Constructors
 
 Types can have type parameters:
 
@@ -1025,29 +1048,197 @@ abstract class List[A] {
 ```scala
 abstract class List[A] {
   def add(element: A): List[A]
-  def fold[B](z: B, op: (B, A) => A): A
+  def fold[B](z: B)(op: (B, A) => A): A
   def toString: String
 }
 ```
 
+## Type Quantification
+
+Subtyping and universal types are two different mechanisms that let you write more general programs. Can you mix them together?
+
+Consider the following class hierarchy:
+
+```scala
+trait Animal {
+  def fitness: Int
+}
+
+trait Reptile extends Animal
+
+trait Mammal extends Animal
+
+trait Zebra extends Mammal {
+  def zebraCount: Int
+}
+
+trait Giraffe extends Mammal
+```
+
+You want to write a function `selection`, that takes two animals as parameters and returns the one with the highest `fitness` value. What will its type signature be?
+
+## Type Quantification (2)
+
+A possible solution using subtyping is the following:
+
+```scala
+def selection(a1: Animal, a2: Animal) =
+  if (a1.fitness > a2.fitness) a1 else a2
+```
+
+What is the problem with this solution?
+
+>   - The return type is `Animal`: call it with two `Zebra`s and you get only an `Animal`
+>       - You loose the ability to access further its `zebraCount` member
+
+## Type Quantification (3)
+
+We could try to solve this issue using a universal type:
+
+```scala
+def selection[A](a1: A, a2: A): A =
+  if (a1.fitness > a2.fitness) a1 else a2
+```
+
+But this solution does not compile: we can not access to the `fitness` field of `a1` and `a2` because `A` is not constrained to be a subtype of `Animal`
+
+## Type Quantification (4)
+
+### Upper Bound
+
+We can write a better solution using a **bounded quantification**:
+
+```scala
+def selection[A <: Animal](a1: A, a2: A): A =
+   if (a1.fitness > a2.fitness) a1 else a2
+```
+
+- `A <: Animal` means “for all type `A` that is a subtype of `Animal`”, and we say that `Animal` is the **upper bound** of `A`
+
+### Lower Bound
+
+Similarly, you can constraint a type parameter `A` to have a **lower bound** `B`:
+
+ - `A >: B`
+
 ## Variance
 
-`List[Int]` and `List[String]` are different types produced by the application of the types `Int` and `String` to the `List` type constructor
+Consider the following type modeling a zoo run containing an animal:
 
-## Type Composition
+```scala
+abstract class Run[A] {
+  def get: A // Get the animal that lives in this run
+}
+```
 
-## Tuple Types
+Mammal well being is a serious subject, the following function checks that a given run has the appropriate size regarding to the animal that lives in (provided you have methods in `Run[A]` and `Mammal` that give you their size):
 
-## Intersection Types
+```scala
+def isLargeEnough(run: Run[Mammal]): Boolean = …
+```
+
+What happens if you pass it a `Run[Zebra]` as parameter?
+
+## Variance (2)
+
+```scala
+scala> isLargeEnough(zebraRun)
+<console>:14: error: type mismatch;
+ found   : Run[Zebra]
+ required: Run[Mammal]
+```
+
+A `Run[Zebra]` is not a subtype of `Run[Mammal]`, in fact they are just two different types without any subtyping relation. Could it be otherwise? Should it be otherwise?
+
+> - Intuitively, a run with a zebra is just a special case of a run with a mammal
+> - `isLargeEnough` can only use the `get` member of its `Run[Mammal]` parameter, and expects to get a `Mammal` value
+> - A `Run[Zebra]` value has a `get` member that returns a `Zebra`, which is a `Mammal`
+> - It seems that `Run[Zebra]` should be a subtype of `Run[Mammal]`
+
+## Covariance
+
+More generally, `Run[A] <: Run[B]` if `A <: B`
+
+We say that `A` is **covariant** in `Run[A]` and we can tell it to the compiler as follows:
+
+```scala
+abstract class Run[+A] {
+  def get: A
+}
+```
+
+Now the compiler accepts that you pass a `Run[Zebra]` where a `Run[Mammal]` is expected
+
+## Variance (3)
+
+Consider the following type modeling a veterinary able to treat animals:
+
+```scala
+abstract class Vet[A] {
+  def treat(a: A)
+}
+```
+
+And the following function treating all the mammals of the zoo using a veterinary passed as parameter:
+
+```scala
+def treatMammals(vet: Vet[Mammal]) { … }
+```
+
+What happens if you pass it a `Vet[Animal]` as parameter?
+
+## Variance (4)
+
+```scala
+scala> treatMammals(animalVet)
+<console>:14: error: type mismatch;
+ found   : Vet[Animal]
+ required: Vet[Mammal]
+```
+
+A `Vet[Animal]` is not a subtype of `Vet[Mammal]`, they are just two different types. Should it be otherwise?
+
+> - Intuitively, a veterinary that can treat animals can treat mammals, because a mammal is just a special case of an animal
+> - `treatMammals` can only use the `treat` member of its `Vet[Mammal]` parameter, and can pass it any `Mammal` value
+> - A `Vet[Animal]` has a `treat` member that takes an `Animal` as parameter, so it can take a `Mammal` as well, because `Mammal` is a subtype of `Animal`
+> - It seems that `Vet[Animal]` should be a subtype of `Vet[Mammal]`
+
+## Contravariance
+
+More generally, `Vet[A] <: Vet[B]` if `A >: B`
+
+We say that `A` is **contravariant** in `Run[A]` and we can tell it to the compiler as follows:
+
+```scala
+abstract class Vet[-A] {
+  def treat(a: A)
+}
+```
+
+Now the compiler accepts that you pass a `Vet[Anima]` where a `Vet[Mammal]` is expected
+
+## Variance (5)
+
+Variance annotations allow you to define the subtyping relation of a type constructor `F[A]` according to the subtyping relation of the types it has been applied
+
+By default, type parameters are **invariant**
+
+## Exercise
+
+* Make the `List` class covariant
+
+* An empty list of `Int` and an empty list of `String` could be represented by a same value. What would be its type? Define such a value, call it `Nil`
 
 
 # Object Orientation
 
 ## Every Value is an Object
 
-`42.toString`
+Scala is a pure object-oriented language
 
-`"foo".length`
+Every value is an object
+
+The type of each value is a class
 
 ## Functions are Objects
 
@@ -1073,20 +1264,110 @@ new Function[Int, Int] {
 
 ### Application
 
-`<name>(t1, t2, …)` is a shorthand for `<name>.apply(t1, t2, …)`
+`f(t1, t2, …)` is a shorthand for `f.apply(t1, t2, …)`
 
 - Note that the underlying value does not need to extend `Function`, it only needs to have an `apply` method
 
-## Infix Notations for Methods
+## Infix Notation for Methods
 
-Any expression of the form `<value>.<member>(<parameter>)` can be written `<value> <member> <parameter>`
+Methods with one parameter can be used like **infix operators**:
+
+```scala
+xs add 3 // Equivalent to “xs.add(3)”
+```
+
+This is especially convenient when methods have symbolic names:
+
+```scala
+1 + 2 // Equivalent to “1.+(2)”
+```
+
+> - How is the expression `1 + 2 * 3` parenthesized?
+>     - `((1 + 2) * 3)` or `(1 + (2 * 3))`?
+
+## Operators Precedence Rules
+
+Operators **precedence** depends on their **first character** and is given by the following list (highest first):
+
+- all special characters (excepted those below)
+- `*` `/` `%`
+- `+` `-`
+- `:`
+- `=` `!`
+- `<` `>`
+- `&`
+- `^`
+- `|`
+- all letters
+
+## Operators Associativity Rules
+
+Consider the following expression building the sequence $\{1, 2\}$:
+
+```scala
+empty[Int] add 2 add 1
+```
+
+Because lists are constructed by “pushing” elements in front, the result of this expression will be a list whose **first** element is `1`
+
+However, in the above expression this element appears in **last** position, which is not intuitive
+
+You would like to write an expression looking like the following, instead:
+
+```scala
+1 add 2 add empty[Int]
+```
+
+## Operators Associativity Rules (2)
+
+Operators **associativity** depends on their **last character**
+
+By default they are **left-associative**: `empty[Int] add 2 add 1` is parenthesized as `(empty[Int] add 2) add 1`
+
+If the operator name ends with character `:` or `=`, it becomes **right-associative**
+
+If the `add` member was renamed to `::` you could write the following expression:
+
+```scala
+1 :: 2 :: empty[Int]
+```
+
+This expression would be parenthesized as `1 :: (2 :: empty[Int])`
+
+## Symbolic vs Alphanumeric Names
+
+Consider the two equivalent programs:
+
+```scala
+empty[Int] add 2 add 1
+```
+
+```scala
+1 :: 2 :: empty[Int]
+```
+
+Symbolic names can make the code **more readable** by differentiating names referring to values and names referring to operators
+
+Symbolic names can make the code **less readable** because they may be less meaningful than alphanumeric names
 
 ## Singleton Objects
 
-TODO
+Creating an object requires calling a constructor prefixed with the `new` keyword
+
+<!-- TODO More on the motivation -->
+
+Alternatively, you can define **singleton objects**:
 
 ```scala
-object Plop
+object MyObject {
+  val foo = 42
+}
+```
+
+`MyObject` is a value of type `MyObject.type` that can be used as follows:
+
+```scala
+println(MyObject.foo)
 ```
 
 ## Top-Level Definitions
@@ -1095,47 +1376,134 @@ Singleton objects and classes (or traits) are the only allowed top-level definit
 
 Any other definition (`val`, `def`) must be nested within a top-level definition
 
+## Companion Objects
+
+An object definition with the same name as a class and declared in the same file is called a **companion object** for this class
+
+A class and its companion object can access each other’s private members
+
+Companion objects are a good place to define functions related to their companion class (e.g. factory methods)
+
 ## Exercise
 
 * Add the alias `++` for the `concat` member of `List`
 
 * Add the alias `::` for the `add` member of `List`
 
-* Use a singleton object to represent the empty sequence
+* Make `Nil` a singleton object
 
 
-# Assignment
+# Assignment, Immutability
 
 ## `var`
 
 ## Pros and Cons
 
 
-# Advanced Functional Programming
+# Purely Functional Data Types
 
-## Algebraic Data Types, Structural Identity, Pattern Matching
+## Structural Identity
 
-Note that `emptyList[Int].add(1) == emptyList[Int].add(1)` evaluates to `false`
+Consider the following REPL session:
 
-## Typeclasses, Implicit Parameters
+```scala
+scala> 1 :: 2 :: List.empty[Int] == 1 :: 2 :: List.empty[Int]
+res0: Boolean = false
 
-Extensibility
+scala> 1 == 1
+res1: Boolean = true
+```
 
-## `for` Notation
+Is there a good reason for the first expression to return `false`?
 
-## Lazy vals and By-Name Parameters
+## Identity and State
 
-Remember the evaluation strategy for parameters?
 
-# Standard Library
+
+## Types as a Space of Possible Values
+
+Until now, we thought of types as a **programmation interface** or a list of “available features”
+
+E.g. type `Complex` has a `real` member
+
+Alternatively, you can think of types as **sets of possible values**
+
+E.g. type `Boolean` has two possible values: `true` and `false`
+
+E.g. a type `State` with three possible values: `Sleeping`, `Eating` and `Working`
+
+## Product Types
+
+What are the possible values of the tuple type `(Boolean, State)`?
+
+`(true, Sleeping)`, `(true, Eating)`, `(true, Working)`, `(false, Sleeping)`, `(false, Eating)`, `(false, Working)`
+
+The number of values is equal to the product of the number of values of the `Boolean` and `State` types
+
+`(Boolean, State)` is a **product type**
+
+## Sum Types
+
+What are the possible values of the following type?
+
+```scala
+abstract class Foo
+class Bar(b: Boolean) extends Foo
+class Baz(s: State) extends Foo
+```
+
+`Foo` is a **sum type**
+
+## Algebraic Data Types
+
+```scala
+case class Plop(b: Boolean, s: State)
+```
+
+## Pattern Matching
+
+## Pattern Matching vs Fold
+
+## Open vs Closed Class Hierarchies and Exhaustive Pattern Matching
+
+## Exercise
+
+* Make `List` an algebraic data type
+
+
+# `for` Notation
+
+## ???
+
+
+# Standard Collections
 
 ## Collections
 
-## Failure Handling
 
-### Option, Either, Try, `try`/`catch`/`throw`
+# Failure Handling
 
-## Types Hierarchy
+## Option
+
+Say you want to add a `head` member to your `List[A]` type, that returns the first element of a list
+
+What should you return in the case of the empty list?
+
+## Either, Try, `try`/`catch`/`throw`
+
+
+# Typeclasses, Implicit Parameters
+
+## ???
+
+Extensibility
+
+
+# Lazy vals and By-Name Parameters
+
+## By-Name Parameters
+
+Remember the evaluation strategy for parameters?
 
 
 # Type Members
@@ -1146,10 +1514,41 @@ Remember the evaluation strategy for parameters?
 
 ## Path-Dependent Types
 
+## Summary of Scala Abstraction Mechanisms
+
++--------+-------------------------+-----------------------+
+|        | Parameters              | Members               |
++========+=========================+=======================+
+| Values | ```scala                | ```scala              |
+|        | def f(x: Int): Int =    | def f(x: Int): Int    |
+|        |   x + 1                 | ```                   |
+|        | ```                     |                       |
+|        |                         | ```scala              |
+|        |                         | val x: Int            |
+|        |                         | ```                   |
++--------+-------------------------+-----------------------+
+| Types  | ```scala                | ```scala              |
+|        | def g[A](a: A): A = a   | type List             |
+|        | ```                     | ```                   |
+|        |                         |                       |
+|        | ```scala                |                       |
+|        | trait Ordering[A] { … } |                       |
+|        | ```                     |                       |
++--------+-------------------------+-----------------------+
+
 
 # Testing
 
-# Bibliography
+## Property-Based Testing
 
-## SICP, coursera, pfpl
+# References
 
+This course is heavily inspired from the following books and courses:
+
+- [Structure and Interpretation of Computer Programs](http://mitpress.mit.edu/sicp), by Harold Abelson, Gerald Jay Sussman and Julie Sussman
+
+- [Programming and Principles](http://lamp.epfl.ch/teaching/progp), by Martin Odersky
+
+- [Types and Programming Languages](http://www.cis.upenn.edu/~bcpierce/tapl/), by Benjamin Pierce
+
+- [Practical Foundations for Programming Languages](http://www.cs.cmu.edu/~rwh/plbook/book.pdf), by Robert Harper
