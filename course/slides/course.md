@@ -865,7 +865,7 @@ abstract class IntList {
 The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2 :: Nil"` for the sequence {1, 2}
 
 
-# Higher-Order Functions and Functions Composition
+# Higher-Order Functions and Function Literals
 
 ## Abstract Over Computations
 
@@ -901,6 +901,34 @@ The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2
         def product = fold(1, (n, p) => p * n)
         ```
 
+## Function Literals
+
+In some cases, you’d like to avoid to repeat the parameter name of a literal function:
+
+```scala
+val inc: Int => Int = x => x + 1
+```
+
+You can use an underscore as a placeholder for the function parameter:
+
+```scala
+val inc: Int => Int = _ + 1
+```
+
+If the function takes several parameters, you can use as many underscores as parameters:
+
+```scala
+def sum = fold(0, _ + _)
+def product = fold(1, _ * _)
+```
+
+## Currying and Partial Application
+
+TODO
+
+
+# Composition Mechanisms
+
 ## Functions Composition
 
 Consider the following functions:
@@ -922,28 +950,52 @@ But a shorter way consists in writing that `hasEvenLength` is the composition of
 val hasEvenLength = isEven compose length
 ```
 
-## Currying and Partial Application
+## Tuples
 
-TODO
+Classes can combine several values together
 
+But sometimes you just want to aggregate values without defining additional methods
 
-# Type Composition
+In such cases, defining an extra class would be cumbersome, you can use **tuples** instead:
 
-## Tuple Types
+```scala
+def euclideanDiv(dividend: Int, divisor: Int): (Int, Int) = {
+  val quotient = dividend / divisor
+  val remainder = dividend % divisor
+  (quotient, remainder)
+}
+```
+
+> - The type `(T1, …, Tn)` is a tuple type of `n` elements which i^th^ element has type `Ti`
+> - The value `(t1, …, tn)` is a tuple value of `n` elements
+
+## Tuples (2)
+
+```scala
+val qr = euclideanDiv(42, 10)
+println(qr._1)
+println(qr._2)
+```
+
+> - Get the i^th^ element of a tuple with the member `_i`
+
+```scala
+val (q, r) = euclideanDiv(42, 10)
+```
+
+> - Or use a **tuple pattern** to *deconstruct* a tuple
 
 ## Intersection Types
 
 ## Traits
 
-## Factories
-
 
 # String Interpolation
 
 
-# Type Abstraction
+# Type Polymorphism
 
-## Type Abstraction
+## Type Polymorphism
 
 Until now, you saw only how to abstract over values
 
@@ -963,7 +1015,7 @@ It is also possible to abstract over **types**
 
 > * Is it possible to write only one `fold` function that would work with both `Int` and `Boolean`?
 
-## Type Polymorphism
+## Polymorphic Functions
 
 Look at the type signatures of `fold` and `foldBool`:
 
@@ -984,7 +1036,7 @@ It always follows this pattern:
 (A, (Int, A) => A) => A
 ```
 
-## Universal Types
+## Polymorphic Functions (2)
 
 Functions can have **type parameters**:
 
@@ -992,7 +1044,7 @@ Functions can have **type parameters**:
 def fold[A](z: A, op: (Int, A) => A): A
 ```
 
-- `A` is a **type parameter**, `fold` is a **polymorphic function**
+- `A` is a **type parameter** (**universally** quantified), `fold` is a **polymorphic function**
 
 You can then call `fold` as follows:
 
@@ -1029,8 +1081,7 @@ abstract class StringList {
 ```
 
 > - Note the strong similarities with `IntList`
->      - As usual, duplicated code should be interpreted as a signal that something should be generalized
->      - In this case, you want to abstract over the type of the elements of the list
+> - You want to abstract over the type of the elements of the list
 
 ## Type Constructors
 
@@ -1105,7 +1156,7 @@ def selection[A](a1: A, a2: A): A =
   if (a1.fitness > a2.fitness) a1 else a2
 ```
 
-But this solution does not compile: we can not access to the `fitness` field of `a1` and `a2` because `A` is not constrained to be a subtype of `Animal`
+But this solution does not compile: we can not access to the `fitness` member of `a1` and `a2` because `A` is not constrained to be a subtype of `Animal`
 
 ## Type Quantification (4)
 
@@ -1220,11 +1271,11 @@ abstract class Vet[-A] {
 }
 ```
 
-Now the compiler accepts that you pass a `Vet[Anima]` where a `Vet[Mammal]` is expected
+Now the compiler accepts that you pass a `Vet[Animal]` where a `Vet[Mammal]` is expected
 
 ## Variance (5)
 
-Variance annotations allow you to define the subtyping relation of a type constructor `F[A]` according to the subtyping relation of the types it has been applied
+For a type constructor `F[X]`, variance annotations allow you to define the subtyping relation of a types `F[A]` and `F[B]` according to the subtyping relation of the types `A` and `B`
 
 By default, type parameters are **invariant**
 
@@ -1398,6 +1449,90 @@ Companion objects are a good place to define functions related to their companio
 * Make `Nil` a singleton object
 
 
+# Algebraic Data Types
+
+## Structural Identity
+
+Consider the following REPL session:
+
+```scala
+scala> 1 :: 2 :: List.empty[Int] == 1 :: 2 :: List.empty[Int]
+res0: Boolean = false
+
+scala> 1 == 1
+res1: Boolean = true
+```
+
+Is there a good reason for the first expression to return `false`?
+
+## Types as a Space of Possible Values
+
+Until now, we thought of types as a **programmation interface**: a list of available members for a given type name
+
+E.g. type `Complex` has a `real` member
+
+Alternatively, you can think of types as **sets of possible values**
+
+E.g. type `Boolean` has two possible values: `true` and `false`
+
+E.g. a type `State` with three possible values: `Sleeping`, `Eating` and `Working`
+
+Then, you can *combine* these sets to create new sets of values
+
+## Product Types
+
+What are the possible values of a type aggregating a `Boolean` value **and** a `State` value?
+
+`Boolean` `State`
+--------- ----------
+`true`    `Sleeping`
+`true`    `Eating`
+`true`    `Working`
+`false`   `Sleeping`
+`false`   `Eating`
+`false`   `Working`
+
+The number of values is equal to the **product** of the number of values of the `Boolean` and the `State` types
+
+## Sum Types
+
+What are the possible values of a type containing either a `Boolean` value **or** a `State` value?
+
+`Boolean` `State`
+--------- -------
+`true`
+`false`
+          `Sleeping`
+          `Eating`
+          `Working`
+
+The number of values is equal to the **sum** of the number of values of the `Boolean` and the `State` types
+
+## Algebraic Data Types
+
+**Algebraic data types** are defined as *sums* or *products* of other types
+
+## Defining `List` as an Algebraic Data Type
+
+## Encoding Algebraic Data Types in Scala
+
+```scala
+case class Plop(b: Boolean, s: State)
+```
+
+## Exercise
+
+* Make `List` an algebraic data type
+
+## Pattern Matching
+
+## Pattern Matching vs Fold
+
+## Open vs Closed Class Hierarchies and Exhaustive Pattern Matching
+
+## Algebraic Data Types and Encapsulation
+
+
 # Assignment, Immutability
 
 ## Motivating Problem
@@ -1418,6 +1553,8 @@ trait CachedFoo extends Foo {
 
 ## `var`
 
+## Identity and State
+
 ## Pros and Cons
 
 ## Immutability When Possible
@@ -1425,77 +1562,6 @@ trait CachedFoo extends Foo {
 > Classes should be immutable unless there's a very good reason to make them mutable....If a class cannot be made immutable, limit its mutability as much as possible.
 
 Joshua Bloch
-
-
-# Purely Functional Data Types
-
-## Structural Identity
-
-Consider the following REPL session:
-
-```scala
-scala> 1 :: 2 :: List.empty[Int] == 1 :: 2 :: List.empty[Int]
-res0: Boolean = false
-
-scala> 1 == 1
-res1: Boolean = true
-```
-
-Is there a good reason for the first expression to return `false`?
-
-## Identity and State
-
-
-
-## Types as a Space of Possible Values
-
-Until now, we thought of types as a **programmation interface** or a list of “available features”
-
-E.g. type `Complex` has a `real` member
-
-Alternatively, you can think of types as **sets of possible values**
-
-E.g. type `Boolean` has two possible values: `true` and `false`
-
-E.g. a type `State` with three possible values: `Sleeping`, `Eating` and `Working`
-
-## Product Types
-
-What are the possible values of the tuple type `(Boolean, State)`?
-
-`(true, Sleeping)`, `(true, Eating)`, `(true, Working)`, `(false, Sleeping)`, `(false, Eating)`, `(false, Working)`
-
-The number of values is equal to the product of the number of values of the `Boolean` and `State` types
-
-`(Boolean, State)` is a **product type**
-
-## Sum Types
-
-What are the possible values of the following type?
-
-```scala
-abstract class Foo
-class Bar(b: Boolean) extends Foo
-class Baz(s: State) extends Foo
-```
-
-`Foo` is a **sum type**
-
-## Algebraic Data Types
-
-```scala
-case class Plop(b: Boolean, s: State)
-```
-
-## Pattern Matching
-
-## Pattern Matching vs Fold
-
-## Open vs Closed Class Hierarchies and Exhaustive Pattern Matching
-
-## Exercise
-
-* Make `List` an algebraic data type
 
 
 # `for` Notation
