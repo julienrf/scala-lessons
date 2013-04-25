@@ -7,7 +7,12 @@
 
 > A problem **well put** is **half solved**.
 
+John Dewey
+
+
 > A **scalable** programming language is one in which the **same** concepts can describe **small** as well as **large** parts.
+
+Martin Odersky
 
 
 ## Scala in a Few Words
@@ -892,8 +897,8 @@ The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2
     * You should then be able to rewrite `sum` and `product` as follows:
 
         ```scala
-        def sum = fold(0, (s, n) => s + n)
-        def product = fold(1, (p, n) => p * n)
+        def sum = fold(0, (n, s) => s + n)
+        def product = fold(1, (n, p) => p * n)
         ```
 
 ## Functions Composition
@@ -952,7 +957,7 @@ It is also possible to abstract over **types**
 
 * Then add a method `hasEvenSize: Boolean` that tests if the list has an even size
 
-* Generalize `forAll` and `hasEvenSize` by adding a method `foldBool(z: Boolean, op: (Boolean, Int) => Boolean): Boolean`
+* Generalize `forAll` and `hasEvenSize` by adding a method `foldBool(z: Boolean, op: (Int, Boolean) => Boolean): Boolean`
 
 > * Note that the implementations of `fold` and `foldBool` are **exactly the same**.
 
@@ -964,19 +969,19 @@ Look at the type signatures of `fold` and `foldBool`:
 
 ```scala
 (Int,     (Int, Int)     => Int)     => Int
-(Boolean, (Boolean, Int) => Boolean) => Boolean
+(Boolean, (Int, Boolean) => Boolean) => Boolean
 ```
 
 You could add a `foldString` with the following type signature:
 
 ```scala
-(String,  (String, Int)  => String)  => String
+(String,  (Int, String)  => String)  => String
 ```
 
 It always follows this pattern:
 
 ```scala
-(A, (A, Int) => A) => A
+(A, (Int, A) => A) => A
 ```
 
 ## Universal Types
@@ -984,7 +989,7 @@ It always follows this pattern:
 Functions can have **type parameters**:
 
 ```scala
-def fold[A](z: A, op: (A, Int) => A): A
+def fold[A](z: A, op: (Int, A) => A): A
 ```
 
 - `A` is a **type parameter**, `fold` is a **polymorphic function**
@@ -992,18 +997,18 @@ def fold[A](z: A, op: (A, Int) => A): A
 You can then call `fold` as follows:
 
 ```scala
-def sum = fold[Int](0, (s, n) => s + n)
-def forAll(p: Int => Boolean) = fold[Boolean](true, (b, n) => b && p(n))
+def sum = fold[Int](0, (n, s) => s + n)
+def forAll(p: Int => Boolean) = fold[Boolean](true, (n, b) => b && p(n))
 ```
 
 >   - Note that if you use the following signature you can help the type inference mechanism and omit the result type in most cases:
 >
 >     ```scala
->     def fold[A](z: A)(op: (A, Int) => A): A
+>     def fold[A](z: A)(op: (Int, A) => A): A
 >     ```
 >
 >     ```scala
->     def sum = fold(0)((s, n) => s + n)
+>     def sum = fold(0)((n, s) => s + n)
 >     ```
 
 ## Exercise
@@ -1048,7 +1053,7 @@ abstract class List[A] {
 ```scala
 abstract class List[A] {
   def add(element: A): List[A]
-  def fold[B](z: B)(op: (B, A) => A): A
+  def fold[B](z: B)(op: (A, B) => B): B
   def toString: String
 }
 ```
@@ -1395,9 +1400,31 @@ Companion objects are a good place to define functions related to their companio
 
 # Assignment, Immutability
 
+## Motivating Problem
+
+```scala
+trait Foo {
+  def bar: Int = …
+}
+```
+
+`bar` triggers a heavy computation. You want to write a `CachedFoo` that caches the result of `bar` for a little time:
+
+```scala
+trait CachedFoo extends Foo {
+  override def bar = ???
+}
+```
+
 ## `var`
 
 ## Pros and Cons
+
+## Immutability When Possible
+
+> Classes should be immutable unless there's a very good reason to make them mutable....If a class cannot be made immutable, limit its mutability as much as possible.
+
+Joshua Bloch
 
 
 # Purely Functional Data Types
