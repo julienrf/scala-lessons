@@ -665,6 +665,8 @@ abstract class Complex {
 
 - Its members are **abstract** (they have no body)
 
+    - (Note that it could also have implemented members)
+
 ## Implementing an Abstract Class
 
 ```scala
@@ -736,7 +738,7 @@ class ComplexRectangular(a: Double, b: Double) extends Complex {
 >     class ComplexRectangular(val real: Double, val imag: Double) extends Complex
 >     ```
 >
->   - Note that `def` members can not be declared as parameters
+>   - Note that (currently) `def` members can not be declared as parameters
 
 ## Abstract Members, Encapsulation and Modularity
 
@@ -792,7 +794,34 @@ class LoggingSemiGroup extends SemiGroup {
 
 ## Members Visibility
 
-TODO
+You can reduce the visibility of the members of a class:
+
+```scala
+abstract class Foo {
+  private def foo = 42
+  protected def bar: Int
+}
+```
+
+- `private` members are not visible outside of the class definition
+
+- `protected` members are not visible outside of the class definition except for subclasses
+
+## Closing a Class Hierarchy
+
+You can forbid the specialization of a class or of its members:
+
+```scala
+class Foo {
+  final def foo = 42
+}
+
+final class Bar extends Foo
+```
+
+- `final` members can not be overriden
+
+- `final` classes can not be extended
 
 ## Standard Class Hierarchy
 
@@ -800,12 +829,24 @@ TODO
 
 ## `Any`
 
-- `==`?
-- `equals`?
+`Any` is the superclass of all classes
+
+It has at least two members that you should be aware of:
+
+```scala
+final def == (that: Any): Boolean
+def equals(that: Any): Boolean
+```
+
+First, note that these members exist in this class mostly for compatibility reasons with the Java language
+
+The `==` member allows you to compare any value with another value. It essentially delegates to `equals`
+
+The default implementation of `equals` for classes compares the **references** `this` and `that`
 
 ## Overloading
 
-TODO
+Several members with the same name can coexist, as long their type signature is different
 
 ## Recursive Types
 
@@ -868,6 +909,8 @@ abstract class IntList {
 ```
 
 The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2 :: Nil"` for the sequence {1, 2}
+
+> - Hint: consider to special case of an `IntList`: an empty list (`Nil`) and a list constructor (`Cons`) containing a head element and a tail list
 
 
 # Higher-Order Functions and Function Literals
@@ -990,12 +1033,57 @@ val (q, r) = euclideanDiv(42, 10)
 
 > - Or use a **tuple pattern** to *deconstruct* a tuple
 
-## Intersection Types
+## Components
+
+You also saw how to implement a set of features in a single component using classes
+
+Is it possible to build a larger system by combining small components together?
+
+For instance, given the following class definitions:
+
+```scala
+class Adding {
+  def add(a: Int, b: Int) = a + b
+}
+```
+
+```scala
+class Multiplying {
+  def mul(a: Int, b: Int) = a * b
+}
+```
+
+How to build calculator from these two components?
 
 ## Traits
 
+**Traits** can encapsulate members and can be mixed together
+
+```scala
+trait Adding {
+  def add(a: Int, b: Int) = a + b
+}
+
+trait Multiplying {
+  def mul(a: Int, b: Int) = a * b
+}
+
+trait Calculator extends Adding with Multiplying
+```
+
+> - A trait definition is like a class definition, except that traits can not have constructor parameters
+> - Traits can be mixed in another trait using `extends` or `with`
+
+## Traits and Dynamic Dispatch
+
+TODO
+
 
 # String Interpolation
+
+## String Interpolation
+
+TODO
 
 
 # Type Polymorphism
@@ -1468,7 +1556,9 @@ scala> 1 == 1
 res1: Boolean = true
 ```
 
-Is there a good reason for the first expression to return `false`?
+In the first expression we are comparing two different **instances**, that’s why we get `false`
+
+But is there a good reason to return `false`?
 
 ## A Type as a Space of Possible Values
 
@@ -1555,8 +1645,18 @@ case class SuperHero(isSavingTheWorld: Boolean) extends Person
 case class Human(state: State) extends Person
 ```
 
-- A `sealed` class can not be extended, except if the subclass is defined in the same source file
+- A `case class` can not be extended
+- A `sealed class` can not be extended, except if the subclass is defined in the same source file
 - A `Person` can either be a `SuperHero` or a `Human`, but nothing else
+
+The `State` type could be implemented as follows:
+
+```scala
+sealed abstract class State
+case object Sleeping extends State
+case object Eating extends State
+case object Working extends State
+```
 
 ## Pattern Matching
 
@@ -1602,6 +1702,113 @@ Should you use algebraic data types or regular classes?
 - Classes are **open types** (they can be extended), but you can not add a new operation on a class hierarchy without changing the whole hierarchy
 
 
+# Failure Handling
+
+## Option
+
+Say you want to add a `head` member to your `List[A]` type, that returns the first element of a list
+
+What should you return in the case of the empty list?
+
+## Either, Try, `try`/`catch`/`throw`
+
+
+# Standard Collections
+
+## Standard Collections
+
+The Scala standard library provides several types making it easier to deal with collections of elements
+
+This section gives a slight overview of the standard collections. For more details see the [API documentation](http://scala-lang.org/api)
+
+## `Traversable`
+
+The most general one is `Traversable[A]`, it provides methods to iterate on the elements of a collection, to transform a collection, to filter it, and a lot more:
+
+Method           Description
+----------       -------------
+`xs.foreach(f)`  Applies the function `f` to every element of `xs`
+`xs ++ ys`       The concatenation of the elements of `xs` and `ys`
+`xs.size`        The number of elements in `xs`
+`xs.map(f)`      A collection obtained from applying `f` to every element of `xs`
+`xs.filter(p)`   A collection obtained from filtering elements of `xs` that satisfy the predicate `p`
+`xs.take(n)`     A collection containing the `n` first elements of `xs`
+`xs.find(p)`     An optional value containing the first element of `xs` that satisfies `p`
+`xs.headOption`  An optional value containing the first element of `xs`
+`xs.tailOption`  An optional value containing the tail of `xs`
+
+## `Iterable`
+
+`Iterable[A]` extends `Traversable[A]`, here are some of its new members:
+
+Method             Description
+-----------        -------------
+`xs.iterator`      An `Iterator[A]` over the elements of `xs`
+`xs.grouped(n)`    An iterator that yields fixed-size chunks of `xs`
+`xs zip ys`        An iterable of pairs of corresponding elements of `xs` and `ys`
+`xs.zipWithIndex`  An iterable of pairs of elements of `xs` with their indices
+
+## `Seq`
+
+`Seq[A]` is an `Iterable[A]` which order of elements is deterministic. It adds the following members:
+
+Method               Description
+----------           ---------------
+`x +: xs`            A collection with the elements of `xs` prepended with `x`
+`xs :+ x`            A collection with the elements of `xs` followed by `x`
+`xs.get(n)`          An optional value containing the `n`^th^ element of `xs` (0 indicates the first element)
+`xs.reverse`         A collection with the elements of `xs` in reverse order
+`xs.updated(n, x)`   A copy of `xs` which `n`^th^ element has been replaced by `x`
+`xs.sorted`          A collection with the elements of `xs` sorted
+
+## `List` and `Vector`
+
+`List[A]` and `Vector[A]` are two implementations of `Seq[A]` with different performance characteristics:
+
+- `List[A]` has more efficient `head` and `tail` implementations
+
+- `Vector[A]` has more efficient `get` and `size` implementations
+
+- If you want to do random access, you should use `Vector[A]`
+
+```scala
+val xs = 1 :: 2 :: 3 :: Nil // List
+val ys = Vector(1, 2, 3)
+```
+
+## `Set`
+
+A `Set[A]` is an `Iterable[A]` that contains no duplicate elements. It adds the following members:
+
+Method               Description
+-----------          ----------------
+`xs + x`             A set containing the elements of `xs` and `x`
+`xs - x`             A set containing the elements of `xs` without `x`
+`xs.contains(x)`     Tests if `x` is contained in `xs`
+`xs & ys`            Intersection of `xs` and `ys`
+`xs | ys`            Union of `xs` and `ys`
+`xs.subsetOf(ys)`    Tests if `xs` is a subset of `ys`
+
+```scala
+val xs = Set(1, 2, 3)
+```
+
+## `Map`
+
+A `Map[A, B]` is an `Iterable[(A, B)]` that contains `B` values indexed by `A` values. It adds the following members:
+
+Method               Description
+-------------        ---------------
+`xs.get(k)`          An optional value containing the value associated with `k`
+`xs + (k -> x)`      Adds a new value `x` associated with `k`
+`xs - k`             Removes the element associated with `k`
+`xs.keys`            An iterable of the keys of `xs`
+
+```scala
+val xs = Map("foo" -> 42, "bar" -> 10, "baz" -> 0)
+```
+
+
 # Assignment, Immutability
 
 ## Motivating Problem
@@ -1636,22 +1843,6 @@ Joshua Bloch
 # `for` Notation
 
 ## ???
-
-
-# Standard Collections
-
-## Collections
-
-
-# Failure Handling
-
-## Option
-
-Say you want to add a `head` member to your `List[A]` type, that returns the first element of a list
-
-What should you return in the case of the empty list?
-
-## Either, Try, `try`/`catch`/`throw`
 
 
 # Typeclasses, Implicit Parameters
