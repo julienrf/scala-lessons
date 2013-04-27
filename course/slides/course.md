@@ -159,8 +159,6 @@ def circumference(radius: Double) = 2 * pi * radius
 def area(radius: Double) = pi * radius * radius
 ```
 
-Usage:
-
 ```scala
 scala> circumference(10)
 res7: Double = 62.8318
@@ -189,7 +187,7 @@ res8: Double = 125.6636
 >
 > Where similar functions are carried out by distinct pieces of code, it is generally beneficial to combine them into one by **abstracting** out the varying parts.
 
-Benjamin C. Pierce, in Types and Programming Languages (2002)
+Benjamin C. Pierce. *Types and Programming Languages*. MIT Press 2002.
 
 ## Exercises
 
@@ -478,11 +476,11 @@ fib(6)
 
 ## Exercise
 
-### [Euler Problem #1](http://projecteuler.net/problem=1)
-
 > If we list all the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6 and 9. The sum of these multiples is 23.
 >
 > Find the sum of all the multiples of 3 or 5 below 1000.
+
+[Euler Problem #1](http://projecteuler.net/problem=1)
 
 ## Solution
 
@@ -738,11 +736,11 @@ class ComplexRectangular(a: Double, b: Double) extends Complex {
 >     class ComplexRectangular(val real: Double, val imag: Double) extends Complex
 >     ```
 >
->   - Note that (currently) `def` members can not be declared as parameters
+>   - Note that `def` members can not be declared as parameters
 
 ## Abstract Members, Encapsulation and Modularity
 
-- Abstract members achieve **data abstraction**, that is a kind of encapsulation
+- Abstract members achieve encapsulation *via* **data abstraction**
 
 - Encapsulation allows the construction of **abstraction layers**
 
@@ -910,7 +908,7 @@ abstract class IntList {
 
 The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2 :: Nil"` for the sequence {1, 2}
 
-> - Hint: consider to special case of an `IntList`: an empty list (`Nil`) and a list constructor (`Cons`) containing a head element and a tail list
+> - Hint: consider two special cases of an `IntList`: an empty list (`Nil`) and a list constructor (`Cons`) containing a head element and a tail list
 
 
 # Higher-Order Functions and Function Literals
@@ -1035,7 +1033,7 @@ val (q, r) = euclideanDiv(42, 10)
 
 ## Components
 
-You also saw how to implement a set of features in a single component using classes
+You saw how to implement a set of features in a single component using classes
 
 Is it possible to build a larger system by combining small components together?
 
@@ -1071,12 +1069,36 @@ trait Multiplying {
 trait Calculator extends Adding with Multiplying
 ```
 
-> - A trait definition is like a class definition, except that traits can not have constructor parameters
-> - Traits can be mixed in another trait using `extends` or `with`
+> - A trait definition is like a class definition, except that **traits can not have constructor parameters**
+> - Traits can have abstract members
+> - Traits can be mixed in another trait using `extends` and `with`
 
 ## Traits and Dynamic Dispatch
 
-TODO
+```scala
+trait Simple {
+  def value = 7
+}
+
+trait Double extends Simple {
+  override def value = super.value * 2
+}
+
+trait Triple extends Simple {
+  override def value = super.value * 3
+}
+```
+
+```scala
+val mixin = new Simple with Double with Triple
+println(mixin.value) // What is printed?
+```
+
+Which implementation of the `value` member is called?
+
+## Traits and Dynamic Dispatch (2)
+
+![Traits Linearization](Traits.png)
 
 
 # String Interpolation
@@ -1146,7 +1168,7 @@ def sum = fold[Int](0, (n, s) => s + n)
 def forAll(p: Int => Boolean) = fold[Boolean](true, (n, b) => b && p(n))
 ```
 
->   - Note that if you use the following signature you can help the type inference mechanism and omit the result type in most cases:
+>   - Note that if you use the following signature you can help the type inference mechanism and omit the applied type in most cases:
 >
 >     ```scala
 >     def fold[A](z: A)(op: (Int, A) => A): A
@@ -1204,7 +1226,7 @@ abstract class List[A] {
 
 ## Type Quantification
 
-Subtyping and universal types are two different mechanisms that let you write more general programs. Can you mix them together?
+Subtyping and universal types are two different generalization mechanisms. Can you mix them together?
 
 Consider the following class hierarchy:
 
@@ -1249,11 +1271,9 @@ def selection[A](a1: A, a2: A): A =
   if (a1.fitness > a2.fitness) a1 else a2
 ```
 
-But this solution does not compile: we can not access to the `fitness` member of `a1` and `a2` because `A` is not constrained to be a subtype of `Animal`
+But this solution does not compile: we can not access the `fitness` member of `a1` and `a2` because `A` is not constrained to be a subtype of `Animal`
 
-## Type Quantification (4)
-
-### Upper Bound
+## Upper and Lower Bounds
 
 We can write a better solution using a **bounded quantification**:
 
@@ -1263,8 +1283,6 @@ def selection[A <: Animal](a1: A, a2: A): A =
 ```
 
 - `A <: Animal` means “for all type `A` that is a subtype of `Animal`”, and we say that `Animal` is the **upper bound** of `A`
-
-### Lower Bound
 
 Similarly, you can constraint a type parameter `A` to have a **lower bound** `B`:
 
@@ -1457,7 +1475,7 @@ Consider the following expression building the sequence $\{1, 2\}$:
 empty[Int] add 2 add 1
 ```
 
-Because lists are constructed by “pushing” elements in front, the result of this expression will be a list whose **first** element is `1`
+Because lists are constructed by “pushing” elements in front, the result of this expression is a list whose **first** element is `1`
 
 However, in the above expression this element appears in **last** position, which is not intuitive
 
@@ -1702,16 +1720,92 @@ Should you use algebraic data types or regular classes?
 - Classes are **open types** (they can be extended), but you can not add a new operation on a class hierarchy without changing the whole hierarchy
 
 
-# Failure Handling
+# Handling Failure
 
-## Option
+## Motivating Problem
 
-Say you want to add a `head` member to your `List[A]` type, that returns the first element of a list
+* Add a `head: A` member to your `List[A]` type, that returns the first element of a list
 
-What should you return in the case of the empty list?
+> - What should you return in case of the empty list?
 
-## Either, Try, `try`/`catch`/`throw`
+## `Option`
 
+A list may have a head element, but that is not always the case
+
+The standard library defines the type `Option[A]` to model optional values
+
+An `Option[A]` value can either be:
+
+- `Some(a)`
+
+- `None`
+
+## `Option` (2)
+
+```scala
+def safeDiv(a: Int, b: Int): Option[Int] =
+  if (b == 0) None
+  else Some(a / b)
+```
+
+```scala
+val maybeQ = safeDiv(42, 10)
+
+maybeQ match {
+  case Some(q) => println(q)
+  case None => println("Division by zero")
+}
+
+println(q getOrElse "Division by zero")
+```
+
+## Exercise
+
+  * Implement the following methods:
+
+    ```scala
+    def head: Option[A]
+    def tail: Option[List[A]]
+    ```
+
+## `Either`
+
+When using a optional value, getting `None` gives you no clue of why there is no value: all you know is that you have no value
+
+The `Either[A, B]` type can be useful to handle failures while keeping track of a reason for the failure
+
+An `Either[A, B]` value can either be:
+
+- `Left(a)`
+
+- `Right(b)`
+
+Conventionnaly the left case is used to store the failure information
+
+## `Either` (2)
+
+```scala
+def safeDiv(a: Int, b: Int): Either[String, Int] =
+  if (b == 0) Left("Division by zero")
+  else Right(a / b)
+```
+
+```scala
+val maybeQ = safeDiv(42, 10)
+
+maybeQ match {
+  case Right(q) => println(q)
+  case Left(error) => println(error)
+}
+```
+
+<!-- TODO?
+
+## `zip`, `map` and `flatMap`
+
+## Try, `try`/`catch`/`throw`
+
+-->
 
 # Standard Collections
 
@@ -1750,7 +1844,7 @@ Method             Description
 
 ## `Seq`
 
-`Seq[A]` is an `Iterable[A]` which order of elements is deterministic. It adds the following members:
+`Seq[A]` is an `Iterable[A]` which order of elements is kept. It adds the following members:
 
 Method               Description
 ----------           ---------------
@@ -1809,35 +1903,165 @@ val xs = Map("foo" -> 42, "bar" -> 10, "baz" -> 0)
 ```
 
 
-# Assignment, Immutability
+# Imperative Programming
 
-## Motivating Problem
+## Motivating Problem: Random Number Generator
+
+Try to implement the following random number generator:
 
 ```scala
-trait Foo {
-  def bar: Int = …
+class RNG {
+  def next(): Int = ???
 }
 ```
 
-`bar` triggers a heavy computation. You want to write a `CachedFoo` that caches the result of `bar` for a little time:
+> Hint: a simple way to generate a sequence of pseudorandom values is to use the following recurrence relation:
+>
+> x~n+1~ = 22695477 x~n~ + 1
+
+Example of use:
 
 ```scala
-trait CachedFoo extends Foo {
-  override def bar = ???
+val rng = new RNG
+println(rng.next())
+println(rng.next())
+```
+
+> - The `next` member is impossible to implement!
+
+## Motivating Problem: Random Number Generator
+
+By changing the `next` signature, a possible implementation would be the following:
+
+```scala
+class RNG {
+  def next(x: Int) = 22695477 * x + 1
 }
 ```
 
-## `var`
+But users would be required to *remember* each value to get the next one:
+
+```scala
+val rng = new RNG
+val x1 = rng.next(1)
+println(x1)
+val x2 = rng.next(x1)
+println(x2)
+```
+
+## Assignment
+
+A `var` definition associates a value with a name, like `val` does, but you can **assign** later a new value to this name:
+
+```scala
+var x = 10
+println(x) // “10”
+x = x + 10
+println(x) // “20”
+```
+
+## Stateful Objects
+
+`RNG` can be implemented as follows using a `var` member:
+
+```scala
+class RNG {
+  private var x = 1
+  def next() = {
+    x = 22695477 * x + 1
+    x
+  }
+}
+```
+
+- The `x` member stores the object’s **state**
+
+## Imperative Loops
+
+```scala
+def fact(n: Int) = {
+  var result = 1
+  var i = 2
+  while (i <= n) {
+    result = result * i
+    i = i + 1
+  }
+  result
+}
+```
+
+## Benefits of Assignment
+
+- **Stateful objects** help maintaining code modularity
+
+    - The stateful version of `RNG` does not require users to explicitly manipulate objects state (by passing an additional parameter)
 
 ## Identity and State
 
-## Pros and Cons
+```scala
+val rng1 = new RNG
+val rng2 = new RNG
+```
+
+Are `rng1` and `rng2` the same objects? At first glance they seem to be equal
+
+```scala
+println(rng1.next()) // “22695478”
+println(rng1.next()) // “-2138921681”
+println(rng2.next()) // “22695478”
+```
+
+`rng1` and `rng2` have distinct **effects**, they are not equals in a sense that we can not substitute one by the other
+
+The introduction of assignment leads to the loss of **referential transparency** and makes reasonning about programs drastically more difficult
+
+## Stateful Objects, Sharing and Copying
+
+```scala
+val rng1 = new RNG
+val rng2 = rng1
+```
+
+Giving two different names to the *same* object can be confusing: applying a method on `rng1` will have an effect on `rng2`!
+
+Stateful objects force you to distinguish between the intents of **sharing** and **copying**
+
+This problem does not exist with **immutable objects**
+
+## Pure Functions and Side-Effects
+
+Without assignment, the following declaration has only one possible implementation:
+
+```scala
+def mystery[A](a: A): A
+```
+
+>   - The identity function:
+>
+>     ```scala
+>     def mystery[A](a: A): A = a
+>     ```
+>
+>   - But with assignment, the following becomes possible:
+>
+>     ```scala
+>     def mystery[A](a: A): A = {
+>       destroyTheWorld()
+>       a
+>     }
+>     ```
+>
+>   - Without assignment the type signature of a computation tells a lot about its behavior
 
 ## Immutability When Possible
 
+> In addition to raising complications about computational models, programs written in imperative style are susceptible to bugs that cannot occur in functional programs.
+
+Harold Abelson *et. al.* *Structure and Interpretation of Computer Programs*. MIT Press 1993
+
 > Classes should be immutable unless there's a very good reason to make them mutable....If a class cannot be made immutable, limit its mutability as much as possible.
 
-Joshua Bloch
+Joshua Bloch. *Effective Java*. Addison Wesley 2008
 
 
 # `for` Notation
@@ -1845,11 +2069,157 @@ Joshua Bloch
 ## ???
 
 
-# Typeclasses, Implicit Parameters
+# Type Classes and Implicit Parameters
 
-## ???
+## Motivating Problem
 
-Extensibility
+Remember the `sum` method of `IntList`?
+
+```scala
+def sumInts(xs: List[Int]): Int = xs.fold(0)(_ + _)
+```
+
+What if we want to compute the sum of a list of complex numbers?
+
+```scala
+def sumComplexes(zs: List[Complex]): Complex =
+  zs.fold(new Complex(0, 0))(_ add _)
+```
+
+- Can we abstract over the similarities of `sumInts` and `sumComplexes`?
+
+## Motivating Problem (2)
+
+```scala
+trait Sumable[A <: Sumable[A]] {
+  def + (that: A): A
+}
+
+def sum[A <: Sumable[A]](as: List[A], zero: A): A =
+  as.fold(zero)(_ + _)
+```
+
+We can change the implementation of `Complex` to extend `Sumable[Complex]`:
+
+```scala
+trait Complex extends Sumable[Complex] {
+  def + (that: Complex) = add(that)
+  …
+}
+```
+
+```scala
+val zs = List(new Complex(1, 2), new Complex(3, 4))
+sum(zs, new Complex(0, 0))
+```
+
+## Motivating Problem (3)
+
+- We can not change the implementation of `Int` to make it extend `Sumable[Int]`
+
+- Anyway, this `Sumable` trait captures only a part of the problem: we still need to manually supply the identity element corresponding to each type
+
+## (Almost) Type Classes
+
+```scala
+trait Sumable[A] {
+  def zero: A
+  def append(a1: A, a2: A): A
+}
+```
+
+```scala
+def sum[A](as: List[A], Sumable: Sumable[A]) =
+  as.fold(Sumable.zero)(Sumable.append)
+```
+
+## Retroactive Extension
+
+```scala
+val sumableInt = new Sumable[Int] {
+  val zero = 0
+  def append(a1: Int, a2: Int) = a1 + a2
+}
+```
+
+```scala
+val xs = List(1, 2, 3, 4)
+sum(xs, sumableInt)
+```
+
+## Retroactive Extension (2)
+
+```scala
+val sumableComplex = new Sumable[Complex] {
+  val zero = new Complex(0, 0)
+  def append(a1: Complex, a2: Complex) = a1.add(a2)
+}
+```
+
+```scala
+val zs = List(new Complex(1, 2), new Complex(3, 4))
+sum(zs, sumableComplex)
+```
+
+## (Almost) Type Classes (2)
+
+- The `Sumable[A]` trait captures everything we need to make a sum of a list of `A` (the identity element and the binary operation)
+
+- However, we need to explicitly supply the instance corresponding to each type
+
+    - To compute a sum of `Int` we explicitly pass `sumableInt`
+
+    - To compute a sum of `Complex` we explicitly pass `sumableComplex`
+
+## Implicit Parameters
+
+```scala
+def sum[A](as: List[A])(implicit Sumable: Sumable[A]) =
+  as.fold(Sumable.zero)(Sumable.append)
+```
+
+`sum` takes an **implicit parameter** of type `Sumable[A]`
+
+If you define `sumableInt` and `sumableComplex` as **implicit values** you can omit to supply them when calling `sum`:
+
+```scala
+implicit val sumableInt = …
+implicit val sumableComplex = …
+```
+
+```scala
+sum(xs)
+sum(zs)
+```
+
+## Implicit Parameters (2)
+
+If you call a method without supplying its implicit parameters, the compiler tries to resolve them in the **implicit scope**
+
+The implicit scope is basically built using (by order of priority, highest first):
+
+- implicit values of the current lexical scope or outer scopes,
+
+- explicitly imported implicit values (e.g. `import path.to.some.Implicits._`),
+
+- the implicit values of companion objects of the implicit parameter’s type
+
+## Context Bounds
+
+```scala
+def sum[A : Sumable](as: List[A]) = {
+  val Sumable = implicitly[Sumable[A]]
+  xs.fold(Sumable.zero)(Sumable.append)
+}
+```
+
+- `A : F` expands to an implicit parameter of type `F[A]`
+
+- We say that `F` is a **context bound** for `A`
+
+- You can retrieve an implicit parameter using the `implicitly` helper
+
+- Sometimes the context bound notation is shorter than using an implicit parameter list
 
 
 # Named Parameters and Default Parameters
@@ -1897,14 +2267,28 @@ Remember the evaluation strategy for parameters?
 
 ## Property-Based Testing
 
-# References
 
-This course is heavily inspired from the following books and courses:
+# Extractors
 
-- [Structure and Interpretation of Computer Programs](http://mitpress.mit.edu/sicp), by Harold Abelson, Gerald Jay Sussman and Julie Sussman
 
-- [Programming and Principles](http://lamp.epfl.ch/teaching/progp), by Martin Odersky
+# Recommanded Lectures and References
 
-- [Types and Programming Languages](http://www.cis.upenn.edu/~bcpierce/tapl/), by Benjamin Pierce
+## Recommanded Lectures and References
 
-- [Practical Foundations for Programming Languages](http://www.cs.cmu.edu/~rwh/plbook/book.pdf), by Robert Harper
+- *[Programming in Scala](http://www.artima.com/shop/programming_in_scala_2ed)*. Martin Odersky, Lex Spoon and Bill Venners. Artima 2010,
+
+- *[Functional Programming Principles in Scala](https://www.coursera.org/course/progfun)*. Martin Odersky,
+
+- *[Structure and Interpretation of Computer Programs](http://mitpress.mit.edu/books/structure-and-interpretation-computer-programs)*. Harold Abelson and Gerald Jay Sussman, with Julie Sussman. MIT Press 1996,
+
+- *[Scala in Depth](http://www.manning.com/suereth/)*. Joshua D. Suereth. Manning 2012,
+
+- *[Functional Programming in Scala](http://www.manning.com/bjarnason/)*. Paul Chiusano and Rúnar Bjarnason. Manning 2013.
+
+## Recommanded Lectures and References (2)
+
+- *[Programming and Principles](http://lamp.epfl.ch/teaching/progp)*. Marting Odersky. EPFL,
+
+- *[Types and Programming Languages](http://www.cis.upenn.edu/~bcpierce/tapl/)*. Benjamin Pierce. MIT Press 2002,
+
+- *[Practical Foundations for Programming Languages](http://www.cs.cmu.edu/~rwh/plbook/book.pdf)*. Robert Harper. Cambridge University Press 2012.
