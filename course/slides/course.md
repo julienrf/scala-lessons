@@ -317,7 +317,19 @@ TODO
 
 ## String Interpolation
 
-TODO
+**String interpolation** is a mechanism to build strings from dynamic values:
+
+```scala
+def greet(name: String) = s"Hello, $name!"
+```
+
+- Prefix a string literal with `s`
+
+- Within the string, use `$<name>` to insert a value
+
+```scala
+greet("World") // "Hello, World!"
+```
 
 ## Exercise
 
@@ -959,7 +971,41 @@ def product = fold(1, _ * _)
 
 ## Currying and Partial Application
 
-TODO
+```scala
+def add(a: Int, b: Int) = a + b
+
+add(3, 4) // 7
+```
+
+An equivalent computation could the following:
+
+```scala
+def add(a: Int) = (b: Int) => a + b
+
+add(3)(4) // 7
+```
+
+The first version takes two numbers as parameters and returns a number
+
+The second version takes one number as parameter and returns a function that takes the second number and returns their sum. We say that the second version is a **curried** function
+
+## Currying and Partial Application (2)
+
+Curried function can be partially applied:
+
+```scala
+scala> val inc = add(1)
+inc: Int => Int = <function1>
+
+scala> inc(5)
+res0: Int = 6
+```
+
+Alternatively, you can write the curried version using several **parameters lists**:
+
+```scala
+def add(a: Int)(b: Int) = a + b
+```
 
 
 # Composition Mechanisms
