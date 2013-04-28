@@ -10,9 +10,11 @@ object Cell {
 
 case class World (size: Int, cells: SparseMatrix[Cell]) {
 
+  def at(x: Int, y: Int) = cells(x, y)
+
   def circular(n: Int): Int =
     if (n < 0) circular(n + size)
-    else if (n > size) circular(n - size)
+    else if (n >= size) circular(n - size)
     else n
 
   def neighbours(x: Int, y: Int): Seq[Cell] =
@@ -20,17 +22,23 @@ case class World (size: Int, cells: SparseMatrix[Cell]) {
       i <- -1 to 1
       j <- -1 to 1
       if !(i == 0 && j == 0)
-    } yield cells(circular(i), circular(j))
+    } yield at(circular(x + i), circular(y + j))
 
-  def next: World =
-    cells.fold(World(size)) {
-      case ((x, y, cell), world) =>
+  def next: World = {
+    val xys =
+      for {
+        x <- 0 until size
+        y <- 0 until size
+      } yield (x, y)
+
+    xys.foldRight(World(size)) {
+      case ((x, y), world) =>
+        val cell = at(x, y)
         val aliveNeighbours = neighbours(x, y).filter(_.alive).size
         val alive = (cell.alive && (aliveNeighbours == 2 || aliveNeighbours == 3)) || aliveNeighbours == 3
-        //if (cell.alive != alive) println(s"State changed at ($x, $y)")
         world.copy(cells = world.cells.updated(x, y)(Cell(alive)))
     }
-
+  }
 
   override def toString = {
     val buffer = new StringBuilder
