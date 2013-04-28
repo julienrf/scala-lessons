@@ -306,7 +306,7 @@ res9: Int = 24
 Is the evaluation process guaranteed to terminate?
 
 ```scala
-def loop: ??? = loop
+def loop: Nothing = loop
 ```
 
 <!--
@@ -314,6 +314,10 @@ def loop: ??? = loop
 
 TODO
 -->
+
+## String Interpolation
+
+TODO
 
 ## Exercise
 
@@ -825,23 +829,6 @@ final class Bar extends Foo
 
 ![Scala Class Hierarchy](ScalaClassHierarchy.png)
 
-## `Any`
-
-`Any` is the superclass of all classes
-
-It has at least two members that you should be aware of:
-
-```scala
-final def == (that: Any): Boolean
-def equals(that: Any): Boolean
-```
-
-First, note that these members exist in this class mostly for compatibility reasons with the Java language
-
-The `==` member allows you to compare any value with another value. It essentially delegates to `equals`
-
-The default implementation of `equals` for classes compares the **references** `this` and `that`
-
 ## Overloading
 
 Several members with the same name can coexist, as long their type signature is different
@@ -902,11 +889,11 @@ Implement an abstract data type representing a sequence of integers of arbitrary
 ```scala
 abstract class IntList {
   def add(n: Int): IntList
-  def toString: String
+  def concat(ns: IntList): IntList
 }
 ```
 
-The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2 :: Nil"` for the sequence {1, 2}
+Override the `toString` method to return `"Nil"` for the empty sequence, and `"1 :: 2 :: Nil"` for the sequence {1, 2}
 
 > - Hint: consider two special cases of an `IntList`: an empty list (`Nil`) and a list constructor (`Cons`) containing a head element and a tail list
 
@@ -921,11 +908,9 @@ The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2
 
 * Then add a method `product: Int` that returns the product of the elements of the list
 
-> * Note the strong **similarities** between `sum` and `product`
+> * Note the **similarities** between `sum` and `product`
 
 > * Can you write a more general function that could be reused to define `sum` and `product`?
-
-> * TODO More on why it is difficult without higher-order functions
 
 ## Higher-Order Functions
 
@@ -946,6 +931,10 @@ The `toString` method should return `"Nil"` for the empty sequence, and `"1 :: 2
         def sum = fold(0, (n, s) => s + n)
         def product = fold(1, (n, p) => p * n)
         ```
+
+* Add a `foreach(f: Int => Unit): Unit` member, that applies the function `f` to each element of the list
+
+* Add a `filter(p: Int => Boolean): IntList` member that returns a list containing all the elements satisfying `p`
 
 ## Function Literals
 
@@ -1101,13 +1090,6 @@ Which implementation of the `value` member is called?
 ![Traits Linearization](Traits.png)
 
 
-# String Interpolation
-
-## String Interpolation
-
-TODO
-
-
 # Type Polymorphism
 
 ## Type Polymorphism
@@ -1182,8 +1164,6 @@ def forAll(p: Int => Boolean) = fold[Boolean](true, (n, b) => b && p(n))
 
 * Make `fold` polymorphic
 
-* Rewrite `sum`, `product`, `forAll` and `hasEvenSize` in terms of `fold`
-
 ## Exercise
 
 * Implement an abstract data type representing a list of `String` elements:
@@ -1191,7 +1171,7 @@ def forAll(p: Int => Boolean) = fold[Boolean](true, (n, b) => b && p(n))
 ```scala
 abstract class StringList {
   def add(str: String): StringList
-  def toString: String
+  def concat(ss: StringList): StringList
 }
 ```
 
@@ -1205,7 +1185,7 @@ Types can have type parameters:
 ```scala
 abstract class List[A] {
   def add(element: A): List[A]
-  def toString: String
+  def concat(as: List[A]): List[A]
 }
 ```
 
@@ -1219,8 +1199,8 @@ abstract class List[A] {
 ```scala
 abstract class List[A] {
   def add(element: A): List[A]
+  def concat(as: List[A]): List[A]
   def fold[B](z: B)(op: (A, B) => B): B
-  def toString: String
 }
 ```
 
@@ -1386,15 +1366,13 @@ Now the compiler accepts that you pass a `Vet[Animal]` where a `Vet[Mammal]` is 
 
 ## Variance (5)
 
-For a type constructor `F[X]`, variance annotations allow you to define the subtyping relation of a types `F[A]` and `F[B]` according to the subtyping relation of the types `A` and `B`
+For a type constructor `F[X]`, variance annotations allow you to define the subtyping relation of the types `F[A]` and `F[B]` according to the subtyping relation of the types `A` and `B`
 
 By default, type parameters are **invariant**
 
 ## Exercise
 
 * Make the `List` class covariant
-
-* An empty list of `Int` and an empty list of `String` could be represented by a same value. What would be its type? Define such a value, call it `Nil`
 
 
 # Object Orientation
@@ -1472,7 +1450,7 @@ Operators **precedence** depends on their **first character** and is given by th
 Consider the following expression building the sequence $\{1, 2\}$:
 
 ```scala
-empty[Int] add 2 add 1
+(new Nil[Int]) add 2 add 1
 ```
 
 Because lists are constructed by “pushing” elements in front, the result of this expression is a list whose **first** element is `1`
@@ -1482,7 +1460,7 @@ However, in the above expression this element appears in **last** position, whic
 You would like to write an expression looking like the following, instead:
 
 ```scala
-1 add 2 add empty[Int]
+1 add 2 add (new Nil[Int])
 ```
 
 ## Operators Associativity Rules (2)
@@ -1496,7 +1474,7 @@ If the operator name ends with character `:` or `=`, it becomes **right-associat
 If the `add` member was renamed to `::` you could write the following expression:
 
 ```scala
-1 :: 2 :: empty[Int]
+1 :: 2 :: (new Nil[Int])
 ```
 
 This expression would be parenthesized as `1 :: (2 :: empty[Int])`
@@ -1506,11 +1484,11 @@ This expression would be parenthesized as `1 :: (2 :: empty[Int])`
 Consider the two equivalent programs:
 
 ```scala
-empty[Int] add 2 add 1
+(new Nil[Int]) add 2 add 1
 ```
 
 ```scala
-1 :: 2 :: empty[Int]
+1 :: 2 :: (new Nil[Int])
 ```
 
 Symbolic names can make the code **more readable** by differentiating names referring to values and names referring to operators
@@ -1557,7 +1535,7 @@ Companion objects are a good place to define functions related to their companio
 
 * Add the alias `::` for the `add` member of `List`
 
-* Make `Nil` a singleton object
+* An empty list of `Int` and an empty list of `String` could be represented by a same value. What would be its type? Define such a value as a singleton object, call it `Nil`
 
 
 # Algebraic Data Types
@@ -1567,16 +1545,34 @@ Companion objects are a good place to define functions related to their companio
 Consider the following REPL session:
 
 ```scala
-scala> 1 :: 2 :: List.empty[Int] == 1 :: 2 :: List.empty[Int]
+scala> import julienrf.course._
+import julienrf.course._
+
+scala> 1 :: 2 :: Nil == 1 :: 2 :: Nil
 res0: Boolean = false
 
 scala> 1 == 1
 res1: Boolean = true
 ```
 
-In the first expression we are comparing two different **instances**, that’s why we get `false`
+Why does the first expression return `false`?
 
-But is there a good reason to return `false`?
+## `==`
+
+`Any` is the superclass of all classes
+
+It has at least two members that you should be aware of:
+
+```scala
+final def == (that: Any): Boolean
+def equals(that: Any): Boolean
+```
+
+First, note that these members exist in this class mostly for compatibility reasons with the Java language
+
+The `==` member allows you to compare any value with another value. It essentially delegates to `equals`
+
+The default implementation of `equals` for classes compares the **references** `this` and `that`
 
 ## A Type as a Space of Possible Values
 
@@ -1587,8 +1583,8 @@ E.g. type `Complex` has a `real` member
 Alternatively, you can think of types as **sets of possible values**
 
 - type `Boolean` has two possible values: `true` and `false`
-- a type `State` with three possible values: `Sleeping`, `Eating` and `Working`
 - type `Int` has 2^32^ possible values
+- a type `State` with three possible values: `Sleeping`, `Eating` and `Working`
 
 Then, you can **combine** these sets to create new sets of values
 
@@ -1724,7 +1720,7 @@ Should you use algebraic data types or regular classes?
 
 ## Motivating Problem
 
-* Add a `head: A` member to your `List[A]` type, that returns the first element of a list
+* Try to add a `head: A` member to your `List[A]` type, that returns the first element of a list
 
 > - What should you return in case of the empty list?
 
@@ -1764,9 +1760,58 @@ println(q getOrElse "Division by zero")
   * Implement the following methods:
 
     ```scala
-    def head: Option[A]
-    def tail: Option[List[A]]
+    def headOption: Option[A]
+    def tailOption: Option[List[A]]
     ```
+
+## Common Patterns With Optional Values
+
+Use `map` to transform a successful value into another successful value, ignoring the `None` case:
+
+```scala
+def inc(maybeN: Option[Int]): Option[Int] =
+  maybeN.map(n => n + 1)
+
+def toString(maybeN: Option[Int]): Option[String] =
+  maybeN.map(_.toString)
+```
+
+## Common Patterns With Optional Values (2)
+
+Use `filter` to turn a successful value into a failure if it does not satisfy a given predicate:
+
+```scala
+def even(maybeN: Option[Int]): Option[Int] =
+  maybeN.filter(n => n % 2 == 0)
+```
+
+## Common Patterns With Optional Values (3)
+
+Use `flatMap` to transform a successful value into an optional value:
+
+```scala
+def inverse(maybeN: Option[Int]): Option[Int] =
+  maybeN.flatMap(n => safeDiv(1, n))
+```
+
+## Sequencing Computations Manipulating Optional Values
+
+`flatMap` and `map` are used to apply sequenced computations to optional values:
+
+```scala
+def foo(maybeN: Option[Int]): Option[Int] =
+  maybeN.flatMap { n =>
+    safeDiv(1, n).flatMap { q =>
+      intSqrt(q).map { q2 =>
+        q2 + 1
+      }
+    }
+  }
+```
+
+(provided `intSqrt` has type signature `Int => Option[Int]` and returns a successful square root only of its parameter is a perfect square)
+
+(We will see a more expressive way of expressing such computations, soon)
 
 ## `Either`
 
@@ -1799,9 +1844,7 @@ maybeQ match {
 }
 ```
 
-<!-- TODO?
-
-## `zip`, `map` and `flatMap`
+<!-- TODO
 
 ## Try, `try`/`catch`/`throw`
 
@@ -1825,6 +1868,7 @@ Method           Description
 `xs ++ ys`       The concatenation of the elements of `xs` and `ys`
 `xs.size`        The number of elements in `xs`
 `xs.map(f)`      A collection obtained from applying `f` to every element of `xs`
+`xs.flatMap(f)`  A collection obtained from applying `f` to every element of `xs` and concatenating the results
 `xs.filter(p)`   A collection obtained from filtering elements of `xs` that satisfy the predicate `p`
 `xs.take(n)`     A collection containing the `n` first elements of `xs`
 `xs.find(p)`     An optional value containing the first element of `xs` that satisfies `p`
@@ -1870,6 +1914,17 @@ val xs = 1 :: 2 :: 3 :: Nil // List
 val ys = Vector(1, 2, 3)
 ```
 
+## `Range`
+
+`Range` is a useful implementation of `Seq[Int]` that efficiently represents a range of integer values
+
+The simplest way to generate a range is to use `to` and `until` methods of numeric values:
+
+```scala
+(1 to 3).foreach(println) // prints “1”, “2”, “3”
+(0 until 3).map(_ * 2).foreach(println) // prints “0”, “2”, “4”
+```
+
 ## `Set`
 
 A `Set[A]` is an `Iterable[A]` that contains no duplicate elements. It adds the following members:
@@ -1900,6 +1955,97 @@ Method               Description
 
 ```scala
 val xs = Map("foo" -> 42, "bar" -> 10, "baz" -> 0)
+```
+
+## Exercise
+
+* Add the following members to your `List[A]` data type:
+
+```scala
+def size: Int
+def take(n: Int): List[A]
+def drop(n: Int): List[A]
+def map[B](f: A => B): List[B]
+def flatMap[B](f: A => List[B]): List[B]
+```
+
+* Write a one-line solution to the Euler problem #1 using standard collections
+
+* Write a function `isPrime(n: Int): Boolean` that tests if `n` is a prime number
+
+
+# `for` Notation
+
+## Exercise
+
+* Write a function `primes` that takes a parameter `n` and returns all pairs of integers `i` and `j` (with `1 <= j < i < n`) such that `i + j` is prime
+
+## Solution
+
+```scala
+def primes(n: Int): Seq[(Int, Int)] =
+  (1 until n).flatMap { i =>
+    (1 until i).map { j =>
+      (i, j)
+    }.filter(p => isPrime(p._1, p._2))
+  }
+```
+
+> - We nest `flatMap`, `map` and `filter` calls
+>
+> - Do you remember the same pattern with optional values?
+
+## Sequencing Computations
+
+Actually, `flatMap` and `map` functions are very useful to sequence computations within a given *context* (optional values, collections, and much more)
+
+They are so common that Scala supports a more convenient syntax, the **`for` notation**, that desugars to `flatMap`, `map` and `filter` calls
+
+For instance `primes` can be written as follows using the `for` notation:
+
+```scala
+def primes(n: Int): Seq[(Int, Int)] =
+  for {
+    i <- 1 until n
+    j <- 1 until i
+    if isPrime(i + j)
+  } yield (i, j)
+```
+
+## Translation of `for`
+
+```scala
+for (x <- xs) yield x + 1
+```
+
+is translated to:
+
+```scala
+xs.map(x => x + 1)
+```
+
+## Translation of `for` (2)
+
+```scala
+for (x <- xs; y <- ys) yield (x, y)
+```
+
+is translated to:
+
+```scala
+xs.flatMap(x => for (y <- ys) yield (x, y))
+```
+
+## Translation of `for` (3)
+
+```scala
+for (x <- xs if x % 2 == 0) yield x + 1
+```
+
+is essentially translated to:
+
+```scala
+for (x <- xs.filter(x => x % 2 == 0)) yield x + 1
 ```
 
 
@@ -2064,11 +2210,6 @@ Harold Abelson *et. al.* *Structure and Interpretation of Computer Programs*. MI
 Joshua Bloch. *Effective Java*. Addison Wesley 2008
 
 
-# `for` Notation
-
-## ???
-
-
 # Type Classes and Implicit Parameters
 
 ## Motivating Problem
@@ -2129,8 +2270,8 @@ trait Sumable[A] {
 ```
 
 ```scala
-def sum[A](as: List[A], Sumable: Sumable[A]) =
-  as.fold(Sumable.zero)(Sumable.append)
+def sum[A](as: List[A], A: Sumable[A]) =
+  as.fold(A.zero)(A.append)
 ```
 
 ## Retroactive Extension
@@ -2174,8 +2315,8 @@ sum(zs, sumableComplex)
 ## Implicit Parameters
 
 ```scala
-def sum[A](as: List[A])(implicit Sumable: Sumable[A]) =
-  as.fold(Sumable.zero)(Sumable.append)
+def sum[A](as: List[A])(implicit A: Sumable[A]) =
+  as.fold(A.zero)(A.append)
 ```
 
 `sum` takes an **implicit parameter** of type `Sumable[A]`
@@ -2208,8 +2349,8 @@ The implicit scope is basically built using (by order of priority, highest first
 
 ```scala
 def sum[A : Sumable](as: List[A]) = {
-  val Sumable = implicitly[Sumable[A]]
-  xs.fold(Sumable.zero)(Sumable.append)
+  val A = implicitly[Sumable[A]]
+  xs.fold(A.zero)(A.append)
 }
 ```
 
@@ -2222,7 +2363,13 @@ def sum[A : Sumable](as: List[A]) = {
 - Sometimes the context bound notation is shorter than using an implicit parameter list
 
 
-# Named Parameters and Default Parameters
+# Named Parameters, Default Parameters and Repeated Parameters
+
+## Named Parameters
+
+## Default Parameters
+
+## Repeated Parameters
 
 
 # Lazy vals and By-Name Parameters
