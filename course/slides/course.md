@@ -129,7 +129,7 @@ res4: Double = 314.159
 
 ## Naming
 
-- Hopefully we can define **names** to refer to values:
+- We can define **names** to refer to values:
 
 ```scala
 scala> val radius = 10
@@ -177,9 +177,9 @@ res8: Double = 125.6636
 
     - **combine** these expressions (using operators)
 
-    - **abstract** over expressions, by introducing a name to refer to an expression
+    - **abstract** over the value of expressions, by introducing a name to refer to an expression
 
-- These means of composition and abstraction give you **expression power** to generalize programs and combine them
+- These means of abstraction and composition give you **expression power** to generalize programs and combine them
 
 ## Abstraction Principle
 
@@ -406,7 +406,7 @@ $ scala Main
 *sbt-ize* your project:
 
 - Create a directory `my-project` for your project
-- Move your `Main.scala` file into a `my-project/src/main/` directory
+- Move your `Main.scala` file into a `my-project/src/main/scala` directory
 - Run it:
     - `$ sbt run` (from `my-project/` directory)
     - sbt automatically compiles the sources and calls the program entry point
@@ -703,7 +703,7 @@ class ComplexRectangular(a: Double, b: Double) extends Complex {
 - `Complex` is a **superclass** of `ComplexRectangular`
 - `ComplexRectangular` **implements** the abstract members of `Complex`
 
-## Implementating an Abstract Class (2)
+## Implementing an Abstract Class (2)
 
 ```scala
 class ComplexPolar(r: Double, phi: Double) extends Complex {
@@ -837,13 +837,18 @@ final class Bar extends Foo
 
 - `final` classes can not be extended
 
+## Overloading
+
+Several members with the same name can coexist, as long their type signature is different:
+
+```scala
+def add(that: Complex): Complex = …
+def add(real: Double): Complex = add(new Complex(real, 0)
+```
+
 ## Standard Class Hierarchy
 
 ![Scala Class Hierarchy](ScalaClassHierarchy.png)
-
-## Overloading
-
-Several members with the same name can coexist, as long their type signature is different
 
 ## Recursive Types
 
@@ -977,7 +982,7 @@ def add(a: Int, b: Int) = a + b
 add(3, 4) // 7
 ```
 
-An equivalent computation could the following:
+An equivalent computation could be the following:
 
 ```scala
 def add(a: Int) = (b: Int) => a + b
@@ -987,11 +992,13 @@ add(3)(4) // 7
 
 The first version takes two numbers as parameters and returns a number
 
-The second version takes one number as parameter and returns a function that takes the second number and returns their sum. We say that the second version is a **curried** function
+The second version takes one number as parameter and returns a function that takes the second number and returns their sum
+
+We say that the second version is a **curried** function
 
 ## Currying and Partial Application (2)
 
-Curried function can be partially applied:
+Curried functions can be partially applied:
 
 ```scala
 scala> val inc = add(1)
@@ -1677,7 +1684,7 @@ A list is either:
 
 - an empty list, `Nil` ;
 
-- a *constructor*, `Cons(head, tail)`, containing a `head` element and a `tail` list (which is a `List` itself)
+- a list constructor, `Cons(head, tail)`, containing a `head` element and a `tail` list (which is a `List` itself)
 
 ## Encoding Algebraic Data Types
 
@@ -2409,16 +2416,47 @@ def sum[A : Sumable](as: List[A]) = {
 - Sometimes the context bound notation is shorter than using an implicit parameter list
 
 
+# Testing
+
+## Testing
+
+Testing is a practical way to check that your code does not something else than what it is expected to do
+
+## Property-Based Testing
+
+Property-based testing allows you to express general properties on your code and to check them an arbitrarily generated data
+
+## scalacheck
+
+
 # Named Parameters, Default Parameters and Repeated Parameters
 
 ## Named Parameters
 
+```scala
+Range(1, 10, 2)
+```
+
+It is difficult to figure out what the above program does: what is the meaning of these numbers?
+
+Using **named parameters** can improve readability:
+
+```scala
+Range(start = 1, end = 10, step = 2)
+```
+
 ## Default Parameters
+
+TODO
 
 ## Repeated Parameters
 
+TODO
 
-# Lazy vals and By-Name Parameters
+
+# Laziness
+
+## Lazy Vals
 
 ## By-Name Parameters
 
@@ -2454,11 +2492,6 @@ Remember the evaluation strategy for parameters?
 |        | trait Ordering[A] { … } |                       |
 |        | ```                     |                       |
 +--------+-------------------------+-----------------------+
-
-
-# Testing
-
-## Property-Based Testing
 
 
 # Extractors
