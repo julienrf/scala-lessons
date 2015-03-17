@@ -1,5 +1,5 @@
 % Scala Course
-% Julien Richard-Foy, Zenexity
+% Julien Richard-Foy, Zengularity
 
 # Overview
 
@@ -67,18 +67,18 @@ class ExprParser extends RegexParsers {
 The quickest way to try Scala is to use the REPL (Read-Eval-Print-Loop)
 
 ```bash
-$ scala
-Welcome to Scala version 2.10.1 (Java HotSpot(TM) 64-Bit Server VM, Java 1.7.0_17).
+$ sbt console
+Welcome to Scala version 2.11.5 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_40).
 Type in expressions to have them evaluated.
 Type :help for more information.
 
-scala>
+scala> 
 ```
 
-(Check that [Scala](http://www.scala-lang.org) is installed on your system)
+(Check that [sbt](http://www.scala-sbt.org) is installed on your system)
 
 
-# Definitions and Evaluation
+# Values and Types
 
 ## What is a program made of?
 
@@ -86,100 +86,273 @@ scala>
 
 - We need a way to define and reference the elements of the **problem domain**
 
-## The Simplest Program Elements
+## The Simplest Program Elements: Literal Values
 
-- What is “the answer to life the universe and everything”?
+> What is “the answer to life the universe and everything”?
 
 ```scala
 scala> 42
 res0: Int = 42
 ```
 
-- How much is three plus two?
+> What is my name?
+
+```scala
+scala> "Julien"
+res1: String = Julien
+```
+
+- `42` and `"Julien"` are **values** composed of a single **literal value**.
+
+## Compound Values: Operators
+
+> How many is three plus two?
 
 ```scala
 scala> 3 + 2
-res1: Int = 5
+res2: Int = 5
 ```
 
-- What is the result of the concatenation of the texts “Hello ” and “world!”?
+> What is the result of the concatenation of the texts “Hello ” and “world!”?
 
 ```scala
 scala> "Hello " ++ "world!"
-res2: String = Hello world!
+res3: String = Hello world!
 ```
 
-## The Simplest Program Elements (2)
+- Values can be combined using **operators** to build more complex values.
 
-- What is the circumference of a circle with a radius of 10?
+## Compound Values: Method Calls
+
+> What is the size of the text “Hello world!”?
 
 ```scala
-scala> 2 * 3.14159 * 10
-res3: Double = 62.8318
+scala> "Hello world!".size
+res4: Int = 12
 ```
 
-- What is the area of the same circle?
+- **Methods** are **applied** on values using the **dot notation**.
+
+> What is the range of numbers between 1 and 10?
 
 ```scala
-scala> 3.14159 * 10 * 10
-res4: Double = 314.159
+scala> 1.to(10)
+res5: scala.collection.immutable.Range.Inclusive = Range(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 ```
 
-> - *Hard-coded* values makes the program hard to **read** and to **maintain**
+- Methods can have **parameters**. They are supplied between parentheses.
 
-## Naming
+## Operators Are Methods
 
-- We can define **names** to refer to values:
+Actually, operators are just methods with symbolic names:
 
 ```scala
-scala> val radius = 10
-radius: Int = 10
-
-scala> val pi = 3.14159
-pi: Double = 3.14159
-
-scala> val circumference = 2 * pi * radius
-circumference: Double = 62.8318
-
-scala> val area = pi * radius * radius
-area: Double = 314.159
+scala> 3.+(2)
+res6: Int = 5
 ```
 
-## Functions
-
-- What is the circumference of *any* circle, given its radius?
+The **infix syntax** can be used with non-symbolic methods too:
 
 ```scala
-def circumference(radius: Double) = 2 * pi * radius
+scala> 1 to 10
+res7: scala.collection.immutable.Range.Inclusive = Range(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 ```
 
-- What is the area of *any* circle, given its radius?
+- The **unification** of methods and operators makes the language simpler.
+
+## Exercises
+
+- Use the `abs` method to get the absolute value of `-42`.
+
+- Use the `toUpperCase` method to get the text “Hello world!” in upper case.
+
+## Types
+
+- All values have a **type**:
+    - `42` has type `Int`,
+    - `"foo"` has type `String`.
+
+
+- Types **classify** values;
+    - `0` and `42` are both `Int` values.
+
+## Types Guide You
+
+- Type checking forbids you to combine values in a wrong way:
 
 ```scala
-def area(radius: Double) = pi * radius * radius
+scala> 1 to "10"
+<console>:20: error: type mismatch;
+ found   : String("10")
+ required: Int
+              1 to "10"
+                   ^
 ```
+
+- Program execution is a two-step process:
+    - First, the compiler transforms your Scala code into JVM bytecode,
+    - Second, the JVM runs the bytecode.
+- Type checking happens during the first step: errors are detected early.
+
+## Some Common Types
+
+`Int`
+: a 32-bit signed integer
+
+`Double`
+: a 64-bit IEEE-754 floating point number (e.g. `12.34`).
+
+`Boolean`
+: boolean values (`true` and `false`)
+
+`String`
+: text
+
+## Raising the Abstraction Level: Non-Literal Objects
+
+Until now you worked essentially with numbers and text. But how to define things of a higher-level like **images**?
 
 ```scala
-scala> circumference(10)
-res7: Double = 62.8318
-
-scala> circumference(20)
-res8: Double = 125.6636
+scala> Circle(42)
+res8: doodle.core.Circle = Circle(42.0)
 ```
 
-> - By taking the radius as a parameter, the `circumference` function is more **general** than the previous version computing the circumference of circles with radius of 10 only
+`Circle` is a **constructor** that takes one parameter (the radius) and returns a object representing a circle.
 
-## Elements of Programming
+```scala
+scala> Rectangle(30, 50)
+res9: doodle.core.Rectangle = Rectangle(30.0, 50.0)
+```
 
-- The programming language gives us ways to:
+## Manipulating Images: Display and Layout
 
-    - write literal expressions representing **simple elements** (`42`, `"Hello "`, etc.)
+- Show an image with `draw`:
 
-    - **combine** these expressions (using operators)
+```scala
+scala> draw(Rectangle(30, 50))
 
-    - **abstract** over the value of expressions, by introducing a name to refer to an expression
+```
 
-- These means of abstraction and composition give you **expression power** to generalize programs and combine them
+- Layout images by combining them using `beside`, `above` and `under`:
+
+```scala
+scala> Rectangle(60, 100) beside Circle(30)
+res10: doodle.core.Image = Beside(Rectangle(60.0,100.0),Circle(30.0))
+
+scala> draw(Rectangle(60, 100) beside Circle(30))
+
+```
+
+## Exercise
+
+- Draw an exclamation mark.
+
+![](exclamation.png)
+
+## Exercise
+
+- Draw a barbell.
+
+![](barbell.png)
+
+## Manipulating Images: Colors
+
+Use `fillColor` to fill an image with a given color:
+
+```scala
+draw(Rectangle(30, 80) fillColor Color.black)
+```
+
+Examples of available colors are `red`, `blue`, `green`, `black`, `white`, `gray` and `brown`.
+
+## Exercise
+
+- Add colors to your barbell.
+
+![](barbell-color.png)
+
+# Definitions
+
+## Value Definitions
+
+Consider the following program:
+
+```scala
+draw(
+  (Rectangle(25, 100) fillColor Color.black) beside
+  (Rectangle(200, 20) fillColor Color.grey) beside
+  (Rectangle(25, 100) fillColor Color.black)
+)
+```
+
+- It is hard to **read** because the expression is huge;
+- It is hard to **maintain**: if you want to change the width of the weights you have to change the code at **two** places.
+
+## Value Definitions (2)
+
+```scala
+val weight = Rectangle(25, 100) fillColor Color.black
+
+val bar = Rectangle(200, 20) fillColor Color.grey
+
+draw(weight beside bar beside weight)
+```
+
+- The first two lines are **value definitions**. They:
+    - introduce new **names** (`weight` and `bar`),
+    - **bind** them to the value at the right of “=”.
+
+- Names can be used as any other value.
+
+- Note that the type of definitions is **inferred** by the compiler.
+
+## Value Definitions
+
+Now, changing the weights requires to modify the code at one place only:
+
+```scala
+val weight = Rectangle(15, 100) fillColor Color.black
+
+val bar = Rectangle(200, 20) fillColor Color.grey
+
+draw(weight beside bar beside weight)
+```
+
+## Exercise
+
+- Draw two barbells one above the other. The first one must have small weights, while the second one must have heavy weights.
+
+![](barbells.png)
+
+## Method Definitions
+
+Consider the following program:
+
+```scala
+val heavyWeight = Rectangle(30, 100) fillColor Color.black
+val smallWeight = Rectangle(15, 100) fillColor Color.black
+val bar = Rectangle(200, 20) fillColor Color.grey
+
+val smallBarbell = smallWeight beside bar beside smallWeight
+val heavyBarbell = heavyWeight beside bar beside heavyWeight
+
+draw(smallBarbell above heavyBarbell)
+```
+
+Note the similarities between the `heavyWeight` and `smallWeight` definitions. How could you **generalize** them?
+
+## Method Definitions (2)
+
+```scala
+def weight(width: Int) = Rectangle(width, 100) fillColor Color.black
+
+val heavyWeight = weight(30)
+val smallWeight = weight(15)
+```
+
+- The first line is a **method definition**. Contrary to value definitions, method definitions can have **parameters**.
+- Parameters are specified between parentheses, separated by a comma.
+- Parameter’s type must be explicitly given.
 
 ## Abstraction Principle
 
@@ -189,49 +362,121 @@ res8: Double = 125.6636
 
 Benjamin C. Pierce. *Types and Programming Languages*. MIT Press 2002.
 
-## Exercises
+## Exercise
 
-* Write a function `square(x: Double): Double` that returns the square of `x`
+- Define a method `barbell` that takes as parameter an image of a weight and returns an image of a barbell with this weights.
+
+- Rewrite your previous program using the methods `barbell` and `weight`.
+
+<!--
+def barbell(weight: Image) =
+  weight beside (Rectangle(200, 20) fillColor Color.grey) beside weight
+
+def weight(width: Int) = Rectangle(width, 100) fillColor Color.black
+
+val heavyBarbell = barbell(weight(30))
+val smallBarbell = barbell(weight(15))
+
+draw(smallBarbell above heavyBarbell)
+-->
+
+## Elements of Programming
+
+- The programming language gives us ways to:
+
+    - write literal values representing **simple elements** (`42`, `"Hello "`, etc.)
+
+    - **combine** these values (using methods)
+
+    - **abstract** over the value of expressions, by introducing a name to refer to an expression
+
+- These means of abstraction and composition give you **expression power** to generalize programs and combine them
+
+# Loops and Conditionals
+
+## Exercise
+
+- Draw five barbells stacked on top of each other.
+
+## Loops and Conditionals
+
+Consider the following program:
 
 ```scala
-scala> square(5)
-res9: Double = 25.0
+val unit = barbell(weight(15))
+val barbell1 = unit
+val barbell2 = unit above barbell1
+val barbell3 = unit above barbell2
+val barbell4 = unit above barbell3
+val barbell5 = unit above barbell4
 ```
 
-* Rewrite the `area` function using `square`
+Note pattern: each $barbell_n$ value is built by putting a barbell above the $barbell_{n - 1}$ value. How to **generalize** this pattern?
+
+## Loops and Conditionals
+
+Basically, we want to express the following:
+
+- $barbell_n =$
+    - $unit$ if $n = 1$,
+    - $unit$ $above$ $barbell_{n - 1}$ otherwise.
 
 ## Conditional and Boolean Expressions
 
-- What is the absolute value of a number `x`?
-
 ```scala
-def abs(x: Double) = if (x < 0) -x else x
+val unit = barbell(weight(15))
+def barbells(n: Int) =
+  if (n == 1) unit
+  else unit above ???
 ```
 
-- Boolean literals: `true` and `false`
+- You can write **conditional expressions** using `if` and `else`;
 
-- Boolean expressions can be combined with `||` (disjonction), `&&` (conjonction), `!` (negation) and the comparison operations (e.g. `==`)
+- The result of a conditional depends on the `Boolean` value of the condition;
 
-    - `true || false == !false`
+- Boolean literals: `true` and `false`;
 
-## Basic Types
+- Boolean expressions can be combined with `||` (disjonction), `&&` (conjonction), `!` (negation) and the comparison operations (e.g. `==`);
 
-Scala predefines some data types:
+    - `true || false == !false`.
 
-`Int`
-: a 32-bit signed integer
+## Recursive Methods
 
-`Double`
-: a 64-bit IEEE-754 floating point number
+```scala
+val unit = barbell(weight(15))
+def barbells(n: Int): Image =
+  if (n == 1) unit
+  else unit above barbells(n - 1)
+```
 
-`Boolean`
-: boolean values (`true` or `false`)
+- The return type of **recursive** methods is mandatory.
 
-`String`
-: character strings
+## Exercise
 
-`Unit`
-: absence of meaningful value
+- Define a method `circles` that takes a number `n` as parameter and returns an image showing `n` concentric circles of increasing sizes.
+
+![](circles.png)
+
+<!--
+def circles(n: Int): Image =
+  if (n == 1) Circle(25)
+  else Circle(25 + 15 * n) on circles(n - 1)
+-->
+
+## Exercise
+
+<!--
+def triangle(size: Double): Image =
+  Triangle(size, size) lineColor Color.magenta
+
+def sierpinski(n: Int, size: Double): Image =
+  if(n == 1) triangle(size) else {
+    val smaller = sierpinski(n - 1, size/2)
+    smaller above (smaller beside smaller)
+  }
+-->
+
+# Syntax Summary
 
 ## Syntax Summary
 
@@ -247,7 +492,11 @@ Scala predefines some data types:
 
 - `<name>(<expr>, <expr>, …)`
 
-## Evaluation model
+- `<expr>.<name>(<expr>, …)`
+
+# Evaluation Model
+
+## Evaluation Model
 
 Consider the following program:
 
