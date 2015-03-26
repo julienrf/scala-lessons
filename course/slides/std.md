@@ -1,61 +1,58 @@
 # Handling Failure
 
-## Motivating Problem
+## Motivation
 
-* Try to add a `head: A` member to your `List[A]` type, that returns the first element of a list
+Remember the `lighten` method:
 
-> - What should you return in case of the empty list?
+~~~ scala
+def lighten = Barbell(load - 10, length - 20)
+~~~
+
+> - What happens if the `load` or the `lenth` becomes zero or less?
+> - Do you want `lighten` to be **defined** for **all** values of `Barbell`?
 
 ## `Option`
 
-A list may have a head element, but that is not always the case
+A way to model the fact that a given barbell may not have a lighter barbell is to use the `Option` type:
 
-The standard library defines the type `Option[A]` to model optional values
+~~~ scala
+def lighten: Option[Barbell] =
+  if (load <= 15 || length <= 100) None
+  else Some(Barbell(load - 10, length - 20))
+~~~
 
-An `Option[A]` value can either be:
-
-- `Some(a)`
-
-- `None`
-
-## `Option` (2)
-
-```scala
-def safeDiv(a: Int, b: Int): Option[Int] =
-  if (b == 0) None
-  else Some(a / b)
-```
-
-```scala
-val maybeQ = safeDiv(42, 10)
-
-maybeQ match {
-  case Some(q) => println(q)
-  case None => println("Division by zero")
-}
-
-println(q getOrElse "Division by zero")
-```
+- The standard library defines the type `Option[A]` that models an optional value of type `A`
+- An `Option[A]` value can either be:
+    - `Some(a)`
+    - `None`
 
 ## Exercise
 
-  * Implement the following methods:
+- Add a `smaller` method to the `Mat` type:
 
-    ```scala
-    def headOption: Option[A]
-    def tailOption: Option[List[A]]
-    ```
+~~~ scala
+def smaller: Option[Mat] = ???
+~~~
+
+## Common Patterns with Optional Values
+
+`Option` values can be manipulated using pattern matching:
+
+~~~ scala
+def whatIsIn(maybeBarbell: Option[Barbell]): String =
+  maybeBarbell match {
+    case Some(barbell) => "there is a barbell"
+    case None => "there is no barbell"
+  }
+~~~
 
 ## Common Patterns With Optional Values
 
 Use `map` to transform a successful value into another successful value, ignoring the `None` case:
 
 ```scala
-def inc(maybeN: Option[Int]): Option[Int] =
-  maybeN.map(n => n + 1)
-
-def toString(maybeN: Option[Int]): Option[String] =
-  maybeN.map(_.toString)
+def maybeWidth(maybeMat: Option[Mat]): Option[Int] =
+  maybeMat.map(mat => mat.width)
 ```
 
 ## Common Patterns With Optional Values (2)
@@ -63,8 +60,8 @@ def toString(maybeN: Option[Int]): Option[String] =
 Use `filter` to turn a successful value into a failure if it does not satisfy a given predicate:
 
 ```scala
-def even(maybeN: Option[Int]): Option[Int] =
-  maybeN.filter(n => n % 2 == 0)
+def keepHugeMats(maybeMat: Option[Mat]): Option[Mat] =
+  maybeMat.filter(mat => mat.width > 100 && mat.length > 200)
 ```
 
 ## Common Patterns With Optional Values (3)
@@ -72,64 +69,37 @@ def even(maybeN: Option[Int]): Option[Int] =
 Use `flatMap` to transform a successful value into an optional value:
 
 ```scala
-def inverse(maybeN: Option[Int]): Option[Int] =
-  maybeN.flatMap(n => safeDiv(1, n))
+def smallerSmaller(mat: Mat): Option[Mat] =
+  mat.smaller.flatMap(smallerMat => smallerMat.smaller)
 ```
 
 ## Sequencing Computations Manipulating Optional Values
 
-`flatMap` and `map` are used to apply sequenced computations to optional values:
+`flatMap` and `map` are used to sequence computations operating on optional values:
 
 ```scala
-def foo(maybeN: Option[Int]): Option[Int] =
-  maybeN.flatMap { n =>
-    safeDiv(1, n).flatMap { q =>
-      intSqrt(q).map { q2 =>
-        q2 + 1
-      }
+def lightenLightenLoad(barbell: Barbell): Option[Int] =
+  barbell.lighten.flatMap { lighterBarbell =>
+    lighterBarbell.lighten.map { lighterLighterBarbell =>
+      lighterLighterBarell.load
     }
   }
 ```
 
-(provided `intSqrt` has type signature `Int => Option[Int]` and returns a successful square root only of its parameter is a perfect square)
-
 (We will see a more expressive way of expressing such computations, soon)
 
-## `Either`
+## `Try`
 
-When using a optional value, getting `None` gives you no clue of why there is no value: all you know is that you have no value
+- `Try[A]` is _similar_ to `Option[A]` excepted that in case of failure it provides more information. It can either be:
+  - `Success(a)`
+  - `Failure(throwable)`
 
-The `Either[A, B]` type can be useful to handle failures while keeping track of a reason for the failure
+## Common Patterns with `Try[A]` Values
 
-An `Either[A, B]` value can either be:
+- Like `Option[A], `Try[A]` has `map`, `filter` and `flatMap`
 
-- `Left(a)`
-
-- `Right(b)`
-
-Conventionnaly the left case is used to store the failure information
-
-## `Either` (2)
-
-```scala
-def safeDiv(a: Int, b: Int): Either[String, Int] =
-  if (b == 0) Left("Division by zero")
-  else Right(a / b)
-```
-
-```scala
-val maybeQ = safeDiv(42, 10)
-
-maybeQ match {
-  case Right(q) => println(q)
-  case Left(error) => println(error)
-}
-```
-
-<!-- TODO
-
-## Try, `try`/`catch`/`throw`
-
+<!--
+TODO Exceptions try/catch
 -->
 
 # Standard Collections
@@ -144,18 +114,19 @@ This section gives a slight overview of the standard collections. For more detai
 
 The most general one is `Traversable[A]`, it provides methods to iterate on the elements of a collection, to transform a collection, to filter it, and a lot more:
 
-Method           Description
-----------       -------------
-`xs.foreach(f)`  Applies the function `f` to every element of `xs`
-`xs ++ ys`       The concatenation of the elements of `xs` and `ys`
-`xs.size`        The number of elements in `xs`
-`xs.map(f)`      A collection obtained from applying `f` to every element of `xs`
-`xs.flatMap(f)`  A collection obtained from applying `f` to every element of `xs` and concatenating the results
-`xs.filter(p)`   A collection obtained from filtering elements of `xs` that satisfy the predicate `p`
-`xs.take(n)`     A collection containing the `n` first elements of `xs`
-`xs.find(p)`     An optional value containing the first element of `xs` that satisfies `p`
-`xs.headOption`  An optional value containing the first element of `xs`
-`xs.tailOption`  An optional value containing the tail of `xs`
+Method               Description
+----------           -------------
+`xs.foreach(f)`      Applies the function `f` to every element of `xs`
+`xs ++ ys`           The concatenation of the elements of `xs` and `ys`
+`xs.size`            The number of elements in `xs`
+`xs.map(f)`          A collection obtained from applying `f` to every element of `xs`
+`xs.flatMap(f)`      A collection obtained from applying `f` to every element of `xs` and concatenating the results
+`xs.filter(p)`       A collection obtained from filtering elements of `xs` that satisfy the predicate `p`
+`xs.foldleft(z)(f)`  Applies a binary operator `f` to a start value `z` and all elements of `xs`, going left to right
+`xs.take(n)`         A collection containing the `n` first elements of `xs`
+`xs.find(p)`         An optional value containing the first element of `xs` that satisfies `p`
+`xs.headOption`      An optional value containing the first element of `xs`
+`xs.tailOption`      An optional value containing the tail of `xs`
 
 ## `Iterable`
 
@@ -180,6 +151,17 @@ Method               Description
 `xs.reverse`         A collection with the elements of `xs` in reverse order
 `xs.updated(n, x)`   A copy of `xs` which `n`^th^ element has been replaced by `x`
 `xs.sorted`          A collection with the elements of `xs` sorted
+
+## `Seq` (2)
+
+`Seq` can be used with pattern matching as follows:
+
+~~~ scala
+def sum(xs: Seq[Int]): Int = xs match {
+  case Nil     => 0
+  case x +: xs => x + sum(xs)
+}
+~~~
 
 ## `List` and `Vector`
 
@@ -241,17 +223,74 @@ val xs = Map("foo" -> 42, "bar" -> 10, "baz" -> 0)
 
 ## Exercise
 
-* Add the following members to your `List[A]` data type:
+- Change the `circles` method so that it returns a collection of concentric circles:
 
-```scala
-def size: Int
-def take(n: Int): List[A]
-def drop(n: Int): List[A]
-def map[B](f: A => B): List[B]
-def flatMap[B](f: A => List[B]): List[B]
-```
+~~~ scala
+def circles(n: Int): Seq[Circle] = ???
+~~~
 
-* Write a one-line solution to the Euler problem #1 using standard collections
+- Note: write to different implementations: a recursive and a non-recursive one.
 
-* Write a function `isPrime(n: Int): Boolean` that tests if `n` is a prime number
+<!--
+def circles(n: Int): Seq[Circle] = {
+  val unit = Circle(25 + 15 * n)
+  if (n == 1) Seq(unit)
+  else circles(n - 1) :+ unit
+}
 
+def circles(count: Int) =
+  (1 to count) map { n =>
+    Circle(25 + 15 * n)
+  }
+-->
+
+## Exercise
+
+- Do the same for `spiral`:
+
+~~~ scala
+def spiral(n: Int): Seq[Image] = ???
+~~~
+
+<!--
+def spiral(count: Int) =
+  (1 to count) map { n =>
+    val size = 10 + n * 2
+    val dist = 50 + n * 5
+    val angle = Angle.degrees((n * 36) % 360)
+    Circle(size).at(dist * angle.sin, dist * angle.cos)
+  }
+-->
+
+## Exercise
+
+- Change the `stack` method to the following:
+
+~~~ scala
+def stack(images: Seq[Image]): Image = ???
+~~~
+
+- Note: write a recursive implementation and a non-recursive implementation
+
+<!--
+def stack(images: Seq[Image]): Image = images match {
+  case Nil => emptyImage
+  case image +: images => image on stack(images)
+}
+
+def stack(images: Seq[Image]): Image =
+  images.foldLeft(emtyImage)((image, result) => image on result)
+-->
+
+## Exercise
+
+- Change the `layout` method to the following:
+
+~~~ scala
+def layout(op: (Image, Image) => Image, images: Seq[Image]): Image = ???
+~~~
+
+<!--
+def layout(op: (Image, Image) => Image, images: Seq[Image]): Image =
+  images.foldLeft(emptyImage)(op)
+-->

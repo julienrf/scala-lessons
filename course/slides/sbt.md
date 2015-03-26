@@ -21,6 +21,8 @@ object Main extends App {
 $ scalac Main.scala
 ```
 
+(it should produce `*.class` files)
+
 - Run it:
 
 ```bash
@@ -42,14 +44,6 @@ $ scala Main
 
 [sbt](http://www.scala-sbt.org/) is a build tool for Scala (and Java) projects
 
-*sbt-ize* your project:
-
-- Create a directory `my-project` for your project
-- Move your `Main.scala` file into a `my-project/src/main/scala` directory
-- Run it:
-    - `$ sbt run` (from `my-project/` directory)
-    - sbt automatically compiles the sources and calls the program entry point
-
 ## sbt Quick Start
 
 - Run `$ sbt <command>` from your project directory to run an sbt command from your shell
@@ -62,3 +56,18 @@ $ scala Main
     - `> console` to open a Scala REPL in the context of your project
     - `> test` to run the tests of your project
     - `> compile` to compile your project (without running it)
+
+## sbt Quick Start (2)
+
+- The build process of the project is defined in a `build.sbt` file
+- This file essentially defines your project’s **settings**:
+
+    ```scala
+    name := "my-project"
+    
+    version := "1.0"
+    
+    libraryDependencies += "com.chuusai" %% "shapeless" % "2.1.0"
+    ```
+
+- Settings values are Scala expressions

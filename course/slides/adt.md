@@ -1,176 +1,153 @@
-# Algebraic Data Types
+# Modeling the World
 
-## Structural Identity
+## Motivation
 
-Consider the following REPL session:
+- Consider the following `barbell` method that creates a barbell:
 
-```scala
-scala> import julienrf.course._
-import julienrf.course._
-
-scala> 1 :: 2 :: Nil == 1 :: 2 :: Nil
-res0: Boolean = false
-
-scala> 1 == 1
-res1: Boolean = true
-```
-
-Why does the first expression return `false`?
-
-## `==`
-
-`Any` is the superclass of all classes
-
-It has at least two members that you should be aware of:
-
-```scala
-final def == (that: Any): Boolean
-def equals(that: Any): Boolean
-```
-
-First, note that these members exist in this class mostly for compatibility reasons with the Java language
-
-The `==` member allows you to compare any value with another value. It essentially delegates to `equals`
-
-The default implementation of `equals` for classes compares the **references** `this` and `that`
-
-## A Type as a Space of Possible Values
-
-Until now, we thought of types as a **programmation interface**: a list of available members for a given type name
-
-E.g. type `Complex` has a `real` member
-
-Alternatively, you can think of types as **sets of possible values**
-
-- type `Boolean` has two possible values: `true` and `false`
-- type `Int` has 2^32^ possible values
-- a type `State` with three possible values: `Sleeping`, `Eating` and `Working`
-
-Then, you can **combine** these sets to create new sets of values
-
-## Product Types
-
-What are the possible values of a type aggregating a `Boolean` value **and** a `State` value?
-
-`Boolean` `State`
---------- ----------
-`true`    `Sleeping`
-`true`    `Eating`
-`true`    `Working`
-`false`   `Sleeping`
-`false`   `Eating`
-`false`   `Working`
-
-The number of values is equal to the **product** of the number of values of the `Boolean` and the `State` types
-
-## Sum Types
-
-What are the possible values of a type containing either a `Boolean` value **or** a `State` value?
-
-`Boolean` `State`
---------- -------
-`true`
-`false`
-          `Sleeping`
-          `Eating`
-          `Working`
-
-The number of values is equal to the **sum** of the number of values of the `Boolean` and the `State` types
-
-## Algebraic Data Types
-
-**Algebraic data types** are defined as *sums* or *products* of other types
-
-A type is essentially a set of possible values
-
-In that case, it makes sense to assume that two instances of a type are the same if they represent the same value in the set of possible values
-
-## Defining `List` as an Algebraic Data Type
-
-A list is either:
-
-- an empty list, `Nil` ;
-
-- a list constructor, `Cons(head, tail)`, containing a `head` element and a `tail` list (which is a `List` itself)
-
-## Encoding Algebraic Data Types
-
-**case classes** turn regular classes into **product types**:
-
-```scala
-case class Person(isMarried: Boolean, state: State)
-```
-
-- Constructor parameters become members (as if they were prefixed with `val`)
-- An `equals` implementation is generated, performing structural comparison
-    - `new Person(true, Working) == new Person(true, Working)`
-- A companion object with an `apply` member matching the class constructor parameters is automatically generated
-    - You can omit the `new` keyword to create an instance: `Person(true, Working)`
-- A `copy` member is also automatically generated
-    - `Person(true, Working).copy(state = Sleeping)`
-
-## Encoding Algebraic Data Types (2)
-
-**sealed classes** and **inheritance** encode **sum types**:
-
-```scala
-sealed abstract class Person
-case class SuperHero(isSavingTheWorld: Boolean) extends Person
-case class Human(state: State) extends Person
-```
-
-- A `case class` can not be extended
-- A `sealed class` can not be extended, except if the subclass is defined in the same source file
-- A `Person` can either be a `SuperHero` or a `Human`, but nothing else
-
-The `State` type could be implemented as follows:
-
-```scala
-sealed abstract class State
-case object Sleeping extends State
-case object Eating extends State
-case object Working extends State
-```
-
-## Pattern Matching
-
-**Pattern matching** can be used to deconstruct algebraic data types:
-
-```scala
-def isBusy(person: Person) = person match {
-  case SuperHero(isSavingTheWorld) =>
-    isSavingTheWorld
-  case Human(state) =>
-    state == Working
+~~~ scala
+def barbell(load: Int, length: Int): Image = {
+  val weight = Rectangle(load, 100) fillColor Color.black
+  val bar = Rectangle(length, 20) fillColor Color.grey
+  weight beside bar beside weight
 }
-```
+
+val lightBarbell = barbell(10, 180)
+val heavyBarbell = barbell(20, 200)
+~~~
+
+- You can’t do much with our barbells (excepted drawing them)
+
+## Motivation (2)
+
+- How to define a barbell heavier than a given barbell?
+
+~~~ scala
+def weigh(barbell: Image): Image = ???
+~~~
+
+> - Modeling barbells with images makes it hard to manipulate them
+
+## Motivation (3)
+
+- How to define a barbell heavier than a given barbell?
+
+~~~ scala
+def weighLoad(load: Int) = load + 10
+def weighLength(length: Int) = length + 20
+
+val lightBarbellLoad = 10
+val lightBarbellLength = 180
+
+val heavyBarbellLoad = weighLoad(lightBarbellLoad)
+val heavyBarbellLength = weighLength(lightBarbellLength)
+~~~
+
+> - This approach is such a mess to use
+
+## Case Class Definition
+
+~~~ scala
+case class Barbell(load: Int, length: Int) {
+  def weigh: Barbell = Barbell(load + 10, length + 20)
+}
+
+val lightBarbell = Barbell(10, 180)
+val heavyBarbell = lightBarbell.weigh
+~~~
+
+- This code contains a **case class definition** which introduces:
+    - the `Barbell` **type**,
+    - the `Barbell` **constructor**
+
+## Case Class Definition (2)
+
+~~~ scala
+case class Barbell(load: Int, length: Int) {
+  def weigh: Barbell = Barbell(load + 10, length + 20)
+}
+
+val lightBarbell = Barbell(10, 180)
+val heavyBarbell = lightBarbell.weigh
+~~~
+
+- The `Barbell` type has three **members**: `load`, `length` and `weigh`
+- `lightBarbell` and `heavyBarbell` are **instances** of `Barbell`
 
 ## Exercise
 
-* Make `List` an algebraic data type
+- Implement the following method:
 
-## Pattern Matching vs Fold
+~~~ scala
+def barbellImage(barbell: Barbell): Image = ???
+~~~
 
-Consider the following programs:
+## Exercise
 
-```scala
-def sum(xs: List[Int]) = xs match {
-  case Nil => 0
-  case Cons(x, xs) => x + sum(xs)
+- Add a method `lighten` to the `Barbell` type
+
+## Exercise
+
+- A barbell is one possible fitness device
+- Consider also a simple mat as another type of fitness device:
+
+![](mat.png)
+
+- A mat has a width and a length. Define a case class for it.
+
+## Exercise
+
+- Let’s assume that in your world a fitness device is either a mat or a barbell (and nothing else)
+- Write a `fitnessDeviceImage` method that takes a fitness device as parameter and returns an image of it
+
+## Variant Types
+
+- How to model that a fitness device can either be a mat or be a barbell, and nothing else?
+
+~~~ scala
+sealed trait FitnessDevice
+case class Barbell(load: Int, length: Int) extends FitnessDevice
+case class Mat(width: Int, length: Int) extends FitnessDevice
+~~~
+
+- This code contains a **sealed trait definition**, which introduces the `FitnessDevice` type (but **no** constructor)
+- Case class definitions that **extend** `FitnessDevice` define the possible **variants** of `FitnessDevice`
+    - The variants of a sealed type must be defined within the same source file
+
+## Pattern Matching
+
+You can manipulate case classes and sealed types using **pattern matching**:
+
+~~~ scala
+def name(fitnessDevice: FitnessDevice): String = fitnessDevice match {
+  case Barbell(load, length) => "Barbell"
+  case Mat(width, length) => "Mat"
 }
-```
+~~~
 
-```scala
-def sum(xs: List[Int]) =
-  xs.fold(0)((x, s) => x + s)
-```
+## Exercise
 
-- `fold` was your poor man’s pattern matching mechanism
+- Implement the following method:
 
-## Algebraic Data Types and Data Abstraction
+~~~ scala
+def fitnessDeviceImage(fitnessDevice: FitnessDevice): Image = ???
+~~~
 
-Should you use algebraic data types or regular classes?
+## Syntax Summary
 
-- Algebraic data types are **closed types** (they can not be extended), but this characteristic is what makes it easier to add new operations on a type hierarchy
+~~~ scala
+case class <name>(<member1>, <member2>, …)
+~~~
 
-- Classes are **open types** (they can be extended), but you can not add a new operation on a class hierarchy without changing the whole hierarchy
+~~~ scala
+sealed trait <name1>
+case class <name2>(…) extends <name1>
+case class <name3>(…) extends <name1>
+…
+~~~
+
+~~~ scala
+<expr> match {
+  case <name2>(…) => <expr>
+  case <name3>(…) => <expr>
+}
+~~~

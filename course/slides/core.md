@@ -167,13 +167,13 @@ scala> draw(Rectangle(60, 100) beside Circle(30))
 
 - Draw an exclamation mark.
 
-![](core/exclamation.png)
+![](exclamation.png)
 
 ## Exercise
 
 - Draw a barbell.
 
-![](core/barbell.png)
+![](barbell.png)
 
 ## Manipulating Images: Colors
 
@@ -189,7 +189,7 @@ Examples of available colors are `red`, `blue`, `green`, `black`, `white`, `gray
 
 - Add colors to your barbell.
 
-![](core/barbell-color.png)
+![](barbell-color.png)
 
 # Definitions
 
@@ -242,7 +242,7 @@ draw(weight beside bar beside weight)
 
 - Draw two barbells one above the other. The first one must have small weights, while the second one must have heavy weights.
 
-![](core/barbells.png)
+![](barbells.png)
 
 ## Method Definitions
 
@@ -393,7 +393,7 @@ res11: doodle.core.Image = Above(…)
 
 - Define a method `circles` that takes a number `n` as parameter and returns an image showing `n` concentric circles of increasing sizes.
 
-![](core/circles.png)
+![](circles.png)
 
 <!--
 def circles(n: Int): Image = {
@@ -407,7 +407,7 @@ def circles(n: Int): Image = {
 
 - Define a method `spiral` that takes a number `n` as parameter and returns an image showing `n` circles of increasing sizes and laid out in a shape of spiral.
 
-![](core/spiral.png)
+![](spiral.png)
 
 <!--
 def spiral(n: Int): Image = {
@@ -423,7 +423,7 @@ def spiral(n: Int): Image = {
 
 - Define a method `sierpinski` that takes a number `n` as parameter and returns an image showing the _Sierpinski triangle_ at `n` iterations:
 
-![](core/sierpinski.png)
+![](sierpinski.png)
 
 <!--
 def sierpinski(n: Int): Image = {
@@ -440,19 +440,31 @@ def sierpinski(n: Int): Image = {
 
 ## Definitions
 
-- `val <name> = <expr>`
+~~~ scala
+val <name> = <expr>
+~~~
 
-- `def <name>(<p1>, <p2>, …) = <expr>`
+~~~ scala
+def <name>(<p1>, <p2>, …) = <expr>
+~~~
 
 ## Expressions
 
-- `if (<expr>) <expr> else <expr>`
+~~~ scala
+if (<expr>) <expr> else <expr>
+~~~
 
-- `<name>(<expr>, <expr>, …)`
+~~~ scala
+<name>(<expr>, <expr>, …)
+~~~
 
-- `<expr>.<name>(<expr>, …)`
+~~~ scala
+<expr>.<name>(<expr>, …)
+~~~
 
-- `{ <expr> ; … ; <expr> }`
+~~~ scala
+{ <expr> ; … ; <expr> }
+~~~
 
 # Evaluation Model
 
@@ -535,7 +547,7 @@ def circles(count: Int) = stack(n => Circle(25 + 15 * n), count)
 - The parameter `image` has type `Int => Image`, that is a **function** taking an `Int` and returning an `Image`
 - We define `circles` by supplying a **function literal**
 
-## Functions
+## Function Types and Function Values
 
 - The type `(T1, …, Tn) => R` is the type of a function that takes `n` parameters (of type `T1`, …, `Tn`) and returns a value of type `R`
     - `Int => Int` is the type of a function that takes an `Int` and returns an `Int`
