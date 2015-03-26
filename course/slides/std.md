@@ -8,7 +8,7 @@ Remember the `lighten` method:
 def lighten = Barbell(load - 10, length - 20)
 ~~~
 
-> - What happens if the `load` or the `lenth` becomes zero or less?
+> - What happens if the `load` or the `length` becomes zero or less?
 > - Do you want `lighten` to be **defined** for **all** values of `Barbell`?
 
 ## `Option`
@@ -91,12 +91,12 @@ def lightenLightenLoad(barbell: Barbell): Option[Int] =
 ## `Try`
 
 - `Try[A]` is _similar_ to `Option[A]` excepted that in case of failure it provides more information. It can either be:
-  - `Success(a)`
-  - `Failure(throwable)`
+    - `Success(a)`
+    - `Failure(throwable)`
 
 ## Common Patterns with `Try[A]` Values
 
-- Like `Option[A], `Try[A]` has `map`, `filter` and `flatMap`
+- Like `Option[A]`, `Try[A]` has `map`, `filter` and `flatMap`
 
 <!--
 TODO Exceptions try/catch

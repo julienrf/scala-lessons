@@ -15,7 +15,7 @@ val lightBarbell = barbell(10, 180)
 val heavyBarbell = barbell(20, 200)
 ~~~
 
-- You can’t do much with our barbells (excepted drawing them)
+- You can’t do much with your barbells (excepted drawing them)
 
 ## Motivation (2)
 

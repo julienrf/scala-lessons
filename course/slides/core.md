@@ -128,7 +128,7 @@ scala> 1 to "10"
 `String`
 : text
 
-## Raising the Abstraction Level: Non-Literal Objects
+## Raising the Abstraction Level: Non-Literal Values
 
 Until now you worked essentially with numbers and text. But how to define things of a higher-level like **images**?
 
@@ -570,7 +570,7 @@ def spiral(count: Int) = stack(n => {
 
 ## Exercise
 
-- Note the similarities between `stack` and `barbells`. Abstract over their differencies by defining the following `layout` method:
+- Note the similarities between `stack` and `barbells`. Abstract over their differences by defining the following `layout` method:
 
 ```scala
 def layout(op: (Image, Image) => Image, image: Int => Image, n: Int): Image
