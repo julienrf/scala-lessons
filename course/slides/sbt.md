@@ -1,18 +1,14 @@
 
-# Making Real Programs
+# Making Standalone Programs
 
-## Making an Executable Program from a Source File
+## Making a Standalone Program from a Source File
 
 - Write the following program in a file `Main.scala`:
 
 ```scala
 object Main extends App {
 
-  def fact(n: Int): Int =
-    if (n <= 1) 1
-    else n * fact(n - 1)
-
-  println(fact(4))
+  println("Hello world!")
 
 }
 ```
@@ -29,7 +25,7 @@ $ scalac Main.scala
 
 ```bash
 $ scala Main
-24
+"Hello world!"
 ```
 
 ## Scaling the Build Process
@@ -38,7 +34,7 @@ $ scala Main
 
 - How to recompile only the sources impacted by a given modification?
 
-- What if my project depends on a third-party library?
+- What if your project depends on a third-party library?
 
 - How to handle a whole project lifecycle (testing, packaging, publishing, etc.)?
 
