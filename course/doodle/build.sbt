@@ -35,14 +35,15 @@ lazy val doodle = crossProject.
 
 lazy val doodleJVM = doodle.jvm
 
-lazy val doodleJS = doodle.js
+lazy val course = project.in(file("course"))
+  .settings(scalaVersion := "2.11.5")
+  .dependsOn(doodleJVM)
 
 // Handy shortcuts:
 //  - `run`       runs `doodleJVM/run`
 //  - `console`   runs `doodleJVM/console`
 //  - `test`      runs `doodleJVM/test` and then `doodleJS/test`
-//  - `fastOptJS` runs `doodleJS/fastOptJS`
 
-run     <<= run     in (doodleJVM, Compile)
+run     <<= run     in (course, Compile)
 
 console <<= console in (doodleJVM, Compile)
