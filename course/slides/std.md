@@ -116,7 +116,6 @@ The most general one is `Traversable[A]`, it provides methods to iterate on the 
 
 Method               Description
 ----------           -------------
-`xs.foreach(f)`      Applies the function `f` to every element of `xs`
 `xs ++ ys`           The concatenation of the elements of `xs` and `ys`
 `xs.size`            The number of elements in `xs`
 `xs.map(f)`          A collection obtained from applying `f` to every element of `xs`
@@ -127,6 +126,7 @@ Method               Description
 `xs.find(p)`         An optional value containing the first element of `xs` that satisfies `p`
 `xs.headOption`      An optional value containing the first element of `xs`
 `xs.tailOption`      An optional value containing the tail of `xs`
+`xs.foreach(f)`      Applies the function `f` to every element of `xs`
 
 ## `Iterable`
 
@@ -153,6 +153,13 @@ Method               Description
 `xs.sorted`          A collection with the elements of `xs` sorted
 
 ## `Seq` (2)
+
+A `Seq` can be created simply using the `Seq` constructor:
+
+~~~ scala
+val xs = Seq(1, 2, 3)
+val ys = Seq.empty[Int]
+~~~
 
 `Seq` can be used with pattern matching as follows:
 
