@@ -83,17 +83,16 @@ object Life extends GameOfLife {
 
 Consider the following program:
 
-```scala
-def mulComplexes(x: Complex, y: Complex) = x.mul(y)
-```
+~~~ scala
+def run(game: GameOfLife, world: World) = game.next(world)
+~~~
 
-At runtime, the implementation of the concrete type of `x` (`ComplexRectangular` or `ComplexPolar`) is called
-
-This process is named **dynamic method dispatch**
+- At runtime, the implementation of the concrete type of `game` (`Life` or another one) is called
+- This process is named **dynamic method dispatch**
 
 ## Abstract Members, Encapsulation and Modularity
 
-- Abstract members achieve encapsulation *via* **data abstraction**
+- Abstract members achieve **encapsulation**
 
 - Encapsulation allows the construction of **abstraction layers**
 
@@ -101,9 +100,9 @@ This process is named **dynamic method dispatch**
 
 ## Specialization
 
-`Complex` is more **general** than `ComplexRectangular` and `ComplexPolar`
+`GameOfLife` is more **general** than `Life`
 
-You could also say that `ComplexRectangular` and `ComplexPolar` are more **specialized** than `Complex`
+You could also say that `Life` is more **specialized** than `GameOfLife`
 
 When specializing a type, you can:
 
@@ -116,15 +115,15 @@ A subclass **conforms** to its superclass, so it can be used everywhere the supe
 ## Adding a Member to a Base Class
 
 ```scala
-class SemiGroup {
+trait SemiGroup {
   def append(a: Int, b: Int) = a + b
 }
 
-class Monoid extends SemiGroup {
+trait Monoid extends SemiGroup {
   def zero = 0
 }
 
-class Group extends Monoid {
+trait Group extends Monoid {
   def inverse(a: Int) = -a
 }
 ```
@@ -132,7 +131,7 @@ class Group extends Monoid {
 ## Redefining a Member of a Base Class
 
 ```scala
-class LoggingSemiGroup extends SemiGroup {
+trait LoggingSemiGroup extends SemiGroup {
   override def append(a: Int, b: Int) = {
     println(s"Calling append($a, $b)")
     super.append(a, b)
@@ -145,17 +144,16 @@ class LoggingSemiGroup extends SemiGroup {
 
 ## Members Visibility
 
-You can reduce the visibility of the members of a class:
+You can control the visibility of the members of a class:
 
 ```scala
-abstract class Foo {
+trait Foo {
   private def foo = 42
   protected def bar: Int
 }
 ```
 
 - `private` members are not visible outside of the class definition
-
 - `protected` members are not visible outside of the class definition except for subclasses
 
 ## Closing a Class Hierarchy
@@ -171,7 +169,6 @@ final class Bar extends Foo
 ```
 
 - `final` members can not be overriden
-
 - `final` classes can not be extended
 
 ## Overloading
@@ -182,6 +179,14 @@ Several members with the same name can coexist, as long their type signature is 
 def add(that: Complex): Complex = …
 def add(real: Double): Complex = add(new Complex(real, 0)
 ```
+
+## Traits, Classes, Objects, Abstract Members and Parameters
+
+- Traits, classes and objects are different “flavours” of type definition
+- Objects corresponds to the special case of a type with just one value
+- Traits and classes generalize several values
+    - Traits can have abstract members
+    - Classes can have constructor parameters
 
 ## Components
 
@@ -207,7 +212,7 @@ How to build calculator from these two components?
 
 ## Traits
 
-**Traits** can encapsulate members and can be mixed together
+Traits can encapsulate members and can be mixed together
 
 ```scala
 trait Adding {
@@ -221,9 +226,7 @@ trait Multiplying {
 trait Calculator extends Adding with Multiplying
 ```
 
-> - A trait definition is like a class definition, except that **traits can not have constructor parameters**
-> - Traits can have abstract members
-> - Traits can be mixed in another trait using `extends` and `with`
+> - Traits can be mixed in other traits or classes using `extends` and `with`
 
 ## Traits and Dynamic Dispatch
 
