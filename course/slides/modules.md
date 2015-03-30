@@ -188,6 +188,12 @@ def add(real: Double): Complex = add(new Complex(real, 0)
     - Traits can have abstract members
     - Classes can have constructor parameters
 
+## Case Classes vs Classes
+
+- Should you use algebraic data types or regular classes?
+    - Algebraic data types are closed types (they can not be extended), but this characteristic is what makes it easier to add new operations on a type hierarchy
+    - Classes are open types (they can be extended), but you can not add a new operation on a class hierarchy without changing the whole hierarchy
+
 ## Components
 
 You saw how to implement a set of features in a single component using classes

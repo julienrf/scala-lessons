@@ -41,7 +41,7 @@ println(x2)
 
 ## Assignment
 
-A `var` definition associates a value with a name, like `val` does, but you can **assign** later a new value to this name:
+A **`var` definition** associates a value with a name, like `val` does, but you can later **assign** a new value to this name:
 
 ```scala
 var x = 10
