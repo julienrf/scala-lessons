@@ -1,91 +1,83 @@
 # Extensibility and Modularity
 
-## Polar Coordinates
+## Motivation
 
-Alternatively, a complex number could be represented using **polar coordinates**: *(r, &phi;)* where *r* is its *absolute value* and *&phi;* its *argument*
+Your game of life implementation hard codes the rules of the game
 
-```scala
-class Complex(r: Double, phi: Double) {
-
-  val abs = r
-  val arg = phi
-
-  def mul(that: Complex) =
-    new Complex(
-      this.abs * that.abs,
-      this.arg + that.arg
-    )
-
+~~~ scala
+object GameOfLife {
+  def next(world: World): World = ???
 }
-```
+~~~
 
-## Data Abstraction
+- How to abstract over the rules in a way that we can easily plug a given set of rules in a given world?
 
-For users point of view, multiplying two complex numbers would be the same no matter which implementation is used:
+## 1st Solution: Method Parameter
 
-```scala
-z = x.mul(y)
-```
-
-How to abstract over the implementation of the `Complex` type?
-
-## Abstract Classes and Members
-
-```scala
-abstract class Complex {
-  def real: Double
-  def imag: Double
-  def abs: Double
-  def arg: Double
-  def mul(that: Complex): Complex
+~~~ scala
+object GameOfLife {
+  def next(world: World, rules: (Cell, Int) => Cell): World = ???
 }
-```
+~~~
 
-- `Complex` is an **abstract class**
+- `rules` is a function taking a cell and its alive neighbours as parameter and returning the cell at the next generation
 
-- Its members are **abstract** (they have no body)
-
-    - (Note that it could also have implemented members)
-
-## Implementing an Abstract Class
-
-```scala
-class ComplexRectangular(a: Double, b: Double) extends Complex {
-
-  val real = a
-  val imag = b
-  def abs = math.sqrt(a * a + b * b)
-  def arg = math.atan2(a, b)
-
-  def mul(that: Complex) =
-    new Complex(
-      this.real * that.real - this.imag * that.imag,
-      this.imag * that.real + this.real * that.imag
-    )
+~~~ scala
+val life = { (cell: Cell, aliveNeighbours: Int) => 
+  val alive =
+    if (cell.isAlive) aliveNeighbours == 2 || aliveNeighbours == 3
+    else aliveNeighbours == 3
+  Cell(isAlive = alive)
 }
-```
+GameOfLife.next(…, life)
+~~~
 
-- `ComplexRectangular` **extends** (or **subclasses**) `Complex`
-- `Complex` is a **superclass** of `ComplexRectangular`
-- `ComplexRectangular` **implements** the abstract members of `Complex`
+## 2nd Solution: Class Definition
 
-## Implementing an Abstract Class (2)
-
-```scala
-class ComplexPolar(r: Double, phi: Double) extends Complex {
-
-  def real = r * math.cos(phi)
-  def imag = r * math.sin(phi)
-  val abs = r
-  val arg = phi
-
-  def mul(that: Complex) =
-    new Complex(
-      this.abs * that.abs,
-      this.arg + that.arg
-    )
+~~~ scala
+class GameOfLife(rules: (Cell, Seq[Cell]) => Cell) {
+  def next(world: World): World = ???
 }
-```
+~~~
+
+- Given this **class definition**, `GameOfLife` is now also a type
+- Its constructor has one parameter of type `(Cell, Seq[Cell] => Cell)`
+
+~~~ scala
+val gameOfLife = new GameOfLife(life)
+gameOfLife.next(…)
+~~~
+
+- An object of type `GameOfLife` can be created using `new`
+
+## 3rd Solution: Trait Definition
+
+~~~ scala
+trait GameOfLife {
+  def rules(cell: Cell, neighbours: Seq[Cell]): Cell
+  def next(world: World): World = ??? // code calling `rules`
+}
+~~~
+
+- With this **trait definition**, `GameOfLife` has no constructor anymore
+- It has an **abstract method**, `rules`
+
+## 3rd Solution: Trait Definition (2)
+
+~~~ scala
+object Life extends GameOfLife {
+  def rules(cell: Cell, neighbours: Seq[Cell]) = {
+    val alive =
+      if (cell.isAlive) aliveNeighbours == 2 || aliveNeighbours == 3
+      else aliveNeighbours == 3
+    Cell(isAlive = alive)
+  }
+}
+~~~
+
+- The `Life` object **implements** the `GameOfLife` trait
+- The `next` method is **inherited** from the trait
+- Unlike “sealed” trait, a simple trait can have an unlimited number of implementations
 
 ## Dynamic Method Dispatch
 
@@ -98,27 +90,6 @@ def mulComplexes(x: Complex, y: Complex) = x.mul(y)
 At runtime, the implementation of the concrete type of `x` (`ComplexRectangular` or `ComplexPolar`) is called
 
 This process is named **dynamic method dispatch**
-
-## Parameters vs. Abstract Members
-
-Consider this part of the `ComplexRectangular` definition:
-
-```scala
-class ComplexRectangular(a: Double, b: Double) extends Complex {
-  val real = a
-  val imag = b
-}
-```
-
-  - The `real` member implementation just aliases the `a` parameter (the same applies to `imag` and `b`)
-
->   - You can declare `real` and `imag` members in the class constructor parameters list:
->
->     ```scala
->     class ComplexRectangular(val real: Double, val imag: Double) extends Complex
->     ```
->
->   - Note that `def` members can not be declared as parameters
 
 ## Abstract Members, Encapsulation and Modularity
 
