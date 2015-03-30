@@ -86,6 +86,41 @@ res7: scala.collection.immutable.Range.Inclusive = Range(1, 2, 3, 4, 5, 6, 7, 8,
 
 - Use the `toUpperCase` method to get the text “Hello world!” in upper case.
 
+## Raising the Abstraction Level: Non-Literal Values
+
+Until now you worked essentially with numbers and text. But how to define things of a higher-level like **images**?
+
+```scala
+scala> Circle(42)
+res8: doodle.core.Circle = Circle(42.0)
+```
+
+`Circle` is a **constructor** that takes one parameter (the radius) and returns a object representing a circle.
+
+```scala
+scala> Rectangle(30, 50)
+res9: doodle.core.Rectangle = Rectangle(30.0, 50.0)
+```
+
+## Manipulating Images: Display and Layout
+
+- Show an image with `draw`:
+
+```scala
+scala> draw(Rectangle(30, 50))
+
+```
+
+- Layout images by combining them using `beside`, `above` and `under`:
+
+```scala
+scala> Rectangle(60, 100) beside Circle(30)
+res10: doodle.core.Image = Beside(Rectangle(60.0,100.0),Circle(30.0))
+
+scala> draw(Rectangle(60, 100) beside Circle(30))
+
+```
+
 ## Types
 
 - All values have a **type**:
@@ -128,40 +163,12 @@ scala> 1 to "10"
 `String`
 : text
 
-## Raising the Abstraction Level: Non-Literal Values
+## The Type Meaning the Absence of (Meaningful) Value
 
-Until now you worked essentially with numbers and text. But how to define things of a higher-level like **images**?
-
-```scala
-scala> Circle(42)
-res8: doodle.core.Circle = Circle(42.0)
-```
-
-`Circle` is a **constructor** that takes one parameter (the radius) and returns a object representing a circle.
-
-```scala
-scala> Rectangle(30, 50)
-res9: doodle.core.Rectangle = Rectangle(30.0, 50.0)
-```
-
-## Manipulating Images: Display and Layout
-
-- Show an image with `draw`:
-
-```scala
-scala> draw(Rectangle(30, 50))
-
-```
-
-- Layout images by combining them using `beside`, `above` and `under`:
-
-```scala
-scala> Rectangle(60, 100) beside Circle(30)
-res10: doodle.core.Image = Beside(Rectangle(60.0,100.0),Circle(30.0))
-
-scala> draw(Rectangle(60, 100) beside Circle(30))
-
-```
+- Methods like `println` or `draw` return no meaningful value
+- Instead, they perform some **side-effects**
+- Their return type is `Unit`
+- There is only one value of type `Unit`: `()`
 
 ## Exercise
 
@@ -393,6 +400,10 @@ res11: doodle.core.Image = Above(…)
 
 - Define a method `circles` that takes a number `n` as parameter and returns an image showing `n` concentric circles of increasing sizes.
 
+~~~ scala
+def circles(n: Int): Image = ???
+~~~
+
 ![](circles.png)
 
 <!--
@@ -402,6 +413,98 @@ def circles(n: Int): Image = {
   else circle on circles(n - 1)
 }
 -->
+
+# Top-Level Definitions and Lexical Scopes
+
+## Object Definition
+
+- In Scala programs, methods and values must be defined within a top-level definition:
+
+~~~ scala
+object Loops {
+  def circles(n: Int): Image = ???
+}
+~~~
+
+- This code contains an **object definition**, which introduces the name `Loops`
+- `Loops` refers to an **object** with one method, `circles`
+- The method `circles` can be reached from the outside using the usual dot notation: `Loops.circles(42)`
+
+## Packages
+
+- Object definitions can be organized in **packages**:
+
+~~~ scala
+package core
+
+object Loops { … }
+~~~
+
+~~~ scala
+package std
+
+object Lists { … }
+~~~
+
+## Packages Visibility
+
+~~~ scala
+package core
+
+object Loops {
+  def circles(n: Int): Image = ???
+}
+~~~
+
+~~~ scala
+package core
+
+object Definitions {
+  Loops.circles(42)
+}
+~~~
+
+- Names located in a package are visible from code located in the same package
+
+## Packages Visibility (2)
+
+~~~ scala
+package std
+
+object Lists {
+  core.Loops.circles(42)
+}
+~~~
+
+- Names located in a package are not visible from code located in other packages
+- These names must be **fully qualified** to be resolved by the compiler
+
+## Imports
+
+~~~ scala
+package std
+
+import core.Loops
+
+object Lists {
+  Loops.circles(42)
+}
+~~~
+
+- **Import** clauses make names available without qualification
+
+## Blocks and Local Definitions
+
+~~~ scala
+def barbells(n: Int): Image = {
+  val unit = barbell(weight(15))
+  if (n == 1) unit
+  else unit above barbells(n - 1)
+}
+~~~
+
+- Methods and values can also be defined within a **block**
+- These local definitions are not visible from the outside of the block
 
 ## Exercise
 
@@ -439,6 +542,12 @@ def sierpinski(n: Int): Image = {
 # Syntax Summary
 
 ## Definitions
+
+~~~ scala
+object <name> {
+  <statements>
+}
+~~~
 
 ~~~ scala
 val <name> = <expr>
