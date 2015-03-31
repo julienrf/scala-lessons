@@ -648,7 +648,7 @@ def circles(count: Int) = stack(???, count)
 
 ```scala
 def stack(image: Int => Image, n: Int): Image =
-  if (n == 1) image(n) else image(n) on stack(n - 1)
+  if (n == 1) image(n) else image(n) on stack(image, n - 1)
 
 def circles(count: Int) = stack(n => Circle(25 + 15 * n), count)
 ```
@@ -661,7 +661,7 @@ def circles(count: Int) = stack(n => Circle(25 + 15 * n), count)
 - The type `(T1, …, Tn) => R` is the type of a function that takes `n` parameters (of type `T1`, …, `Tn`) and returns a value of type `R`
     - `Int => Int` is the type of a function that takes an `Int` and returns an `Int`
 
-- The value `(t: T1, …, tn: Tn) => <expr>` is a function that takes `n` parameters (`t1`, …, `tn`) and which body is `<expr>`
+- The value `(t1: T1, …, tn: Tn) => <expr>` is a function that takes `n` parameters (`t1`, …, `tn`) and which body is `<expr>`
     - `(a: Int, b: Int) => a + b` is a function that takes two parameters `a` and `b` and returns their sum
 
 ## Exercise
