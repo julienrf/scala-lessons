@@ -39,10 +39,10 @@ def smaller: Option[Mat] = ???
 `Option` values can be manipulated using pattern matching:
 
 ~~~ scala
-def whatIsIn(maybeBarbell: Option[Barbell]): String =
-  maybeBarbell match {
-    case Some(barbell) => "there is a barbell"
-    case None => "there is no barbell"
+def lighterBarbell(barbell: Barbell): String =
+  barbell.lighten match {
+    case Some(barbell) => "there is a lighter barbell"
+    case None => "there is no lighter barbell"
   }
 ~~~
 
@@ -51,8 +51,8 @@ def whatIsIn(maybeBarbell: Option[Barbell]): String =
 Use `map` to transform a successful value into another successful value, ignoring the `None` case:
 
 ```scala
-def maybeWidth(maybeMat: Option[Mat]): Option[Int] =
-  maybeMat.map(mat => mat.width)
+def smallerWidth(mat: Mat): Option[Int] =
+  mat.smaller.map(smallerMat => smallerMat.width)
 ```
 
 ## Common Patterns With Optional Values (2)
@@ -63,6 +63,21 @@ Use `filter` to turn a successful value into a failure if it does not satisfy a 
 def keepHugeMats(maybeMat: Option[Mat]): Option[Mat] =
   maybeMat.filter(mat => mat.width > 100 && mat.length > 200)
 ```
+
+## Exercise
+
+- Write a method that takes a `Mat` as parameter, tries to get a smaller mat and returns its area only if it is higher than 1000:
+
+~~~ scala
+def smallerButLargeEnough(mat: Mat): Option[Int] = ???
+~~~
+
+<!--
+def smallerButLargeEnough(mat: Mat): Option[Int] =
+  mat.smaller
+    .map(smallerMat => smallerMat.width * smallerMat.length)
+    .filter(area => area > 1000)
+-->
 
 ## Common Patterns With Optional Values (3)
 
@@ -110,9 +125,101 @@ The Scala standard library provides several types making it easier to deal with 
 
 This section gives a slight overview of the standard collections. For more details see the [API documentation](http://scala-lang.org/api)
 
+## First Steps
+
+- Create a sequence of objects with `Seq`:
+
+~~~ scala
+val mats = Seq(Mat(100, 50), Mat(120, 50))
+val mats2 = Seq.empty[Mat]
+~~~
+
+- `mats` and `mats2` have type `Seq[Mat]`
+
+## First Steps (2)
+
+- Add an element to the front of the sequence using the `+:` operator:
+
+~~~ scala
+Mat(80, 40) +: mats
+~~~~
+
+- Add an element to the end of the sequence using the `:+` operator:
+
+~~~ scala
+mats :+ Mat(80, 40)
+~~~
+
+- Note that these methods **return a new sequence** (they don’t modify the `mats` object)
+
+## First Steps (3)
+
+- “pattern match” on a sequence like this:
+
+~~~ scala
+def size(mats: Seq[Mat]): Int = mats match {
+  case Nil         => 0
+  case mat +: mats => 1 + size(mats)
+}
+~~~
+
+## First Steps (4)
+
+- Transform the elements of a sequence using `map`:
+
+~~~ scala
+val areas = mats.map(mat => mat.width * mat.length)
+~~~
+
+- `map` takes a function and returns a sequence whose elements are the result of the function applied to the sequence elements
+- `areas` has type `Seq[Int]`
+
+## First Steps (5)
+
+- Filter elements using `filter`:
+
+~~~ scala
+val largerThanOneHundred = mats.filter(mat => mat.width > 100)
+~~~
+
+- `filter` takes a predicate function returning a `Boolean` and returns a sequence whose elements are the sequence elements that satisfy the predicate
+
+## Exercise
+
+- Define a method that takes a sequence of `Mat` and returns their areas if this one is greater than 1000
+
+~~~ scala
+def largeEnough(mats: Seq[Mat]): Seq[Int] = ???
+~~~
+
+<!--
+def largeEnough(mats: Seq[Mat]): Seq[Int] =
+  mats
+    .map(mat => mat.width * mat.length)
+    .filter(area => area > 1000)
+-->
+
+## First Steps (6)
+
+- Transform each element of a sequence into a sequence using `flatMap`:
+
+~~~ scala
+def duplicate(images: Seq[Image]): Seq[Image] =
+  images.flatMap(image => Seq(image above image, image beside image))
+~~~
+
+## First Steps (7)
+
+- Apply a side-effecting function to the elements of a sequence using `foreach`:
+
+~~~ scala
+def drawAll(images: Seq[Image]): Unit =
+  images.foreach(image => draw(image))
+~~~
+
 ## `Traversable`
 
-The most general one is `Traversable[A]`, it provides methods to iterate on the elements of a collection, to transform a collection, to filter it, and a lot more:
+The most general collection is `Traversable[A]`, it provides methods to iterate on the elements of a collection, to transform a collection, to filter it, and a lot more:
 
 Method               Description
 ----------           -------------
