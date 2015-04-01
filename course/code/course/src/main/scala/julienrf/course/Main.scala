@@ -18,6 +18,4 @@ object Main extends App {
 
   def sierpinski(n: Int): Image = ???
 
-  def layout(op: (Image, Image) => Image, image: Int => Image, n: Int): Image = ???
-
 }
