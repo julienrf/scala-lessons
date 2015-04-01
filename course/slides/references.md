@@ -2,17 +2,21 @@
 
 ## Recommanded Lectures and References
 
-- *[Programming in Scala](http://www.artima.com/shop/programming_in_scala_2ed)*. Martin Odersky, Lex Spoon and Bill Venners. Artima 2010,
+- *[Creative Scala](http://underscore.io/training/courses/creative-scala/)*. Underscore Consulting LLP.
 
 - *[Functional Programming Principles in Scala](https://www.coursera.org/course/progfun)*. Martin Odersky,
 
+- *[Functional Programming in Scala](http://www.manning.com/bjarnason/)*. Paul Chiusano and Rúnar Bjarnason. Manning 2013.
+
 - *[Structure and Interpretation of Computer Programs](http://mitpress.mit.edu/books/structure-and-interpretation-computer-programs)*. Harold Abelson and Gerald Jay Sussman, with Julie Sussman. MIT Press 1996,
+
+## Recommanded Lectures and References (2)
+
+- *[Programming in Scala](http://www.artima.com/shop/programming_in_scala_2ed)*. Martin Odersky, Lex Spoon and Bill Venners. Artima 2010,
 
 - *[Scala in Depth](http://www.manning.com/suereth/)*. Joshua D. Suereth. Manning 2012,
 
-- *[Functional Programming in Scala](http://www.manning.com/bjarnason/)*. Paul Chiusano and Rúnar Bjarnason. Manning 2013.
-
-## Recommanded Lectures and References (2)
+## Recommanded Lectures and References (3)
 
 - *[Programming and Principles](http://lamp.epfl.ch/teaching/progp)*. Marting Odersky. EPFL,
 
