@@ -112,18 +112,22 @@ trait Seq[A] {
 
 ## Exercise
 
-* Write a polymorphic `Seq[A]` data type:
+* Write a polymorphic `Col[A]` data type:
 
 ```scala
-trait Seq[A] {
+sealed trait Col[A] {
   def size: Int
-  def concat(as: Seq[A]): Seq[A]
-  def reverse: Seq[A]
-  def map[B](f: A => B): Seq[B]
-  def filter(p: A => Boolean): Seq[A]
+  def concat(as: Col[A]): Col[A]
+  def reverse: Col[A]
+  def map[B](f: A => B): Col[B]
+  def filter(p: A => Boolean): Col[A]
   def forall(p: A => Boolean): Boolean
   def exists(p: A => Boolean): Boolean
+  def fold[B](b: B)(f: (B, A) => B): B
 }
+
+case class Nil[A]() extends Col[A]
+case class OneAnd[A](a: A, tail: Col[A]) extends Col[A]
 ```
 
 ## Type Quantification
