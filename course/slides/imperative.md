@@ -52,7 +52,7 @@ println(x) // “20”
 
 ## Imperative Loops
 
-```scala
+~~~ scala
 def fact(n: Int) = {
   var result = 1
   var i = 2
@@ -62,7 +62,14 @@ def fact(n: Int) = {
   }
   result
 }
-```
+~~~
+
+~~~ scala
+def fact(n: Int): Int = n match {
+  case 0 => 1
+  case n => n * fact(n - 1)
+}
+~~~
 
 ## Stateful Computations
 
@@ -90,22 +97,6 @@ class RNG {
 }
 ~~~
 
-- This code is a **class definition** which introduces :
-    - the `RNG` type
-    - the `RNG` constructor
-
-## Stateful Classes
-
-~~~ scala
-class RNG {
-  private var x = 1
-  def next() = {
-    x = 22695477 * x + 1
-    x
-  }
-}
-~~~
-
 - The `RNG` type has two members:
     - `x`, which is **private** (not reachable from the outside)
     - `next`
@@ -113,7 +104,7 @@ class RNG {
 
 ## Benefits of Assignment
 
-- **Stateful objects** help keeping code modular
+- **Stateful objects** can help keeping code modular
 
     - The stateful version of `RNG` does not require users to explicitly manipulate objects state (by passing an additional parameter)
 
@@ -126,11 +117,11 @@ val rng2 = new RNG
 
 Are `rng1` and `rng2` the same objects? At first glance they seem to be the same…
 
-```scala
+~~~ scala
 println(rng1.next()) // “22695478”
 println(rng1.next()) // “-2138921681”
 println(rng2.next()) // “22695478”
-```
+~~~
 
 `rng1` and `rng2` have distinct **effects**, they are not equals in a sense that we can not substitute one by the other
 
