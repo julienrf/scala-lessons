@@ -35,13 +35,13 @@ GameOfLife.next(…, life)
 ## 2nd Solution: Class Definition
 
 ~~~ scala
-class GameOfLife(rules: (Cell, Seq[Cell]) => Cell) {
+class GameOfLife(rules: (Cell, Int) => Cell) {
   def next(world: World): World = ???
 }
 ~~~
 
 - Given this **class definition**, `GameOfLife` is now also a type
-- Its constructor has one parameter of type `(Cell, Seq[Cell] => Cell)`
+- Its constructor has one parameter of type `(Cell, Int) => Cell`
 
 ~~~ scala
 val gameOfLife = new GameOfLife(life)
@@ -54,7 +54,7 @@ gameOfLife.next(…)
 
 ~~~ scala
 trait GameOfLife {
-  def rules(cell: Cell, neighbours: Seq[Cell]): Cell
+  def rules(cell: Cell, aliveNeighbours: Int): Cell
   def next(world: World): World = ??? // code calling `rules`
 }
 ~~~
@@ -66,7 +66,7 @@ trait GameOfLife {
 
 ~~~ scala
 object Life extends GameOfLife {
-  def rules(cell: Cell, neighbours: Seq[Cell]) = {
+  def rules(cell: Cell, aliveNeighbours: Int) = {
     val alive =
       if (cell.isAlive) aliveNeighbours == 2 || aliveNeighbours == 3
       else aliveNeighbours == 3
@@ -214,7 +214,7 @@ class Multiplying {
 }
 ```
 
-How to build calculator from these two components?
+How to build calculator that provides **both** `add` and `mul` from these two components?
 
 ## Traits
 
@@ -241,17 +241,17 @@ trait Simple {
   def value = 7
 }
 
-trait Double extends Simple {
+trait Doubling extends Simple {
   override def value = super.value * 2
 }
 
-trait Triple extends Simple {
+trait Tripling extends Simple {
   override def value = super.value * 3
 }
 ```
 
 ```scala
-val mixin = new Simple with Double with Triple
+val mixin = new Simple with Doubling with Tripling
 println(mixin.value) // What is printed?
 ```
 
@@ -261,3 +261,8 @@ Which implementation of the `value` member is called?
 
 ![Traits Linearization](Traits.png)
 
+## Exercise
+
+- Abstract over the game rules in your `World` type (you can use the way you prefer)
+- Implement several sets of rules:
+    - See [here](http://en.wikipedia.org/wiki/Life-like_cellular_automaton#A_selection_of_Life-like_rules) for inspiration!
