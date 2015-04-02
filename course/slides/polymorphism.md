@@ -6,39 +6,45 @@ Until now, you saw only how to abstract over values
 
 It is also possible to abstract over **types**
 
-## Exercise
+## Motivation
 
-<!-- FIXME Use `identity(n: Int): Int`, `identity(b: Boolean): Boolean` as an example? -->
+Consider the following methods:
 
-* Add a method `forAll(p: Int => Boolean): Boolean` to `IntList`, that tests if the predicate `p` holds for all the elements of the list
+~~~ scala
+def intIdentity(x: Int): Int = x
+~~~
 
-* Then add a method `hasEvenSize: Boolean` that tests if the list has an even size
+~~~ scala
+def boolIdentity(b: Boolean): Boolean = b
+~~~
 
-* Generalize `forAll` and `hasEvenSize` by adding a method `foldBool(z: Boolean, op: (Int, Boolean) => Boolean): Boolean`
+> - Their implementation is the same
 
-> * Note that the implementations of `fold` and `foldBool` are **exactly the same**.
+## Motivation (2)
 
-> * Is it possible to write only one `fold` function that would work with both `Int` and `Boolean`?
+- You could generalize this pattern for any other type
+- For instance, with `String`:
+
+~~~ scala
+def stringIdentity(s: String): String = s
+~~~
+
+> - How to write a general `identity` function that works with any type?
 
 ## Polymorphic Functions
 
-Look at the type signatures of `fold` and `foldBool`:
+Look at the type signatures of `intIdentity`, `boolIdentity` and `stringIdentity`:
 
 ```scala
-(Int,     (Int, Int)     => Int)     => Int
-(Boolean, (Int, Boolean) => Boolean) => Boolean
-```
-
-You could add a `foldString` with the following type signature:
-
-```scala
-(String,  (Int, String)  => String)  => String
+Int     => Int
+Boolean => Boolean
+String  => String
 ```
 
 It always follows this pattern:
 
 ```scala
-(A, (Int, A) => A) => A
+A       => A
 ```
 
 ## Polymorphic Functions (2)
@@ -46,69 +52,77 @@ It always follows this pattern:
 Functions can have **type parameters**:
 
 ```scala
-def fold[A](z: A, op: (Int, A) => A): A
+def identity[A](a: A): A = a
 ```
 
-- `A` is a **type parameter** (**universally** quantified), `fold` is a **polymorphic function**
+- `A` is a **type parameter** (**universally** quantified), `identity` is a **polymorphic function**
 
-You can then call `fold` as follows:
+You can then call `identity` as follows:
 
 ```scala
-def sum = fold[Int](0, (n, s) => s + n)
-def forAll(p: Int => Boolean) = fold[Boolean](true, (n, b) => b && p(n))
+val x = identity[Int](42)
+val b = identity[Boolean](true)
+val s = identity[String]("foo")
 ```
 
->   - Note that if you use the following signature you can help the type inference mechanism and omit the applied type in most cases:
+>   - Note that the type parameter can actually be inferred from the argument type:
 >
 >     ```scala
->     def fold[A](z: A)(op: (Int, A) => A): A
->     ```
->
->     ```scala
->     def sum = fold(0)((n, s) => s + n)
+>     val x = identity(42)
 >     ```
 
 ## Exercise
 
-* Make `fold` polymorphic
+- Implement the following method that takes a collection at parameter and returns its number of elements:
+
+~~~ scala
+def size[A](as: Seq[A]): Int = ???
+~~~
 
 ## Exercise
 
-* Implement an abstract data type representing a list of `String` elements:
+- Implement the following method that concatenates two sequences:
 
-```scala
-abstract class StringList {
-  def add(str: String): StringList
-  def concat(ss: StringList): StringList
-}
-```
+~~~ scala
+def concat[A](as: Seq[A], as: Seq[A]): Seq[A] = ???
+~~~
 
-> - Note the strong similarities with `IntList`
-> - You want to abstract over the type of the elements of the list
+## Exercise
+
+- Implement the following method that reverses a sequence:
+
+~~~ scala
+def reverse[A](as: Seq[A]): Seq[A] = ???
+~~~
 
 ## Type Constructors
 
 Types can have type parameters:
 
 ```scala
-abstract class List[A] {
-  def add(element: A): List[A]
-  def concat(as: List[A]): List[A]
+trait Seq[A] {
+  def size: Int
+  def concat(as: Seq[A]): Seq[A]
+  def reverse: Seq[A]
 }
 ```
 
-> - `List` is a **type constructor**: it takes a type as parameter and yields another type
->     - E.g. `List[Int]`, `List[String]`, etc.
+> - `Seq` is a **type constructor**: it takes a type as parameter and yields another type
+>     - E.g. `Seq[Int]`, `Seq[String]`, etc.
 
 ## Exercise
 
-* Write a polymorphic `List[A]` data type:
+* Write a polymorphic `Seq[A]` data type:
 
 ```scala
-abstract class List[A] {
-  def add(element: A): List[A]
-  def concat(as: List[A]): List[A]
-  def fold[B](z: B)(op: (A, B) => B): B
+trait Seq[A] {
+  def size: Int
+  def concat(as: Seq[A]): Seq[A]
+  def reverse: Seq[A]
+  def map[B](f: A => B): Seq[B]
+  def filter(p: A => Boolean): Seq[A]
+  def forall(p: A => Boolean): Boolean
+  def exists(p: A => Boolean): Boolean
 }
 ```
 
