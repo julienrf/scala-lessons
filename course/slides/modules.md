@@ -266,3 +266,22 @@ Which implementation of the `value` member is called?
 - Abstract over the game rules in your `World` type (you can use the way you prefer)
 - Implement several sets of rules:
     - See [here](http://en.wikipedia.org/wiki/Life-like_cellular_automaton#A_selection_of_Life-like_rules) for inspiration!
+
+## Exercise
+
+- Model the following domain in Scala:
+    - An arithmetic expression *is* a number *or* an addition,
+    - A number *has* a numeric value,
+    - An addition *has* two terms.
+    - Implement a method that evaluates the value of a specified expression
+- Add a new variant for expressions: a multiplication, which *has* two factors
+- Add a method that prints a specified expression
+
+## Exercise
+
+- Model the following domain in Scala:
+    - An arithmetic expression *can* be evaluated
+    - A number *is* an arithmetic expression that evaluates a number
+    - An addition *is* an arithmetic expression that evaluates the sum of two arithmetic expressions
+- Add a new variant for expressions: a multiplication, which evaluates to the product of two arithmetic expressions
+- Add the capability to be printed to expressions
