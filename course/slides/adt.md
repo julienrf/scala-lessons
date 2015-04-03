@@ -151,3 +151,11 @@ case class <name3>(…) extends <name1>
   case <name3>(…) => <expr>
 }
 ~~~
+
+## Exercise
+
+- Model the following domain in Scala:
+    - A geometric shape *is* a circle *or* a rectangle *or* a triangle,
+    - A circle *has* a radius,
+    - A rectangle *has* a width *and* a height,
+    - A triangle *has* a width *and* a height.
