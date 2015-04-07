@@ -73,7 +73,7 @@ val s = identity[String]("foo")
 
 ## Exercise
 
-- Implement the following method that takes a collection at parameter and returns its number of elements:
+- Implement the following method that takes a collection as parameter and returns its number of elements:
 
 ~~~ scala
 def size[A](as: Seq[A]): Int = ???
@@ -84,7 +84,7 @@ def size[A](as: Seq[A]): Int = ???
 - Implement the following method that concatenates two sequences:
 
 ~~~ scala
-def concat[A](as: Seq[A], as: Seq[A]): Seq[A] = ???
+def concat[A](as1: Seq[A], as2: Seq[A]): Seq[A] = ???
 ~~~
 
 ## Exercise
@@ -116,17 +116,17 @@ trait Seq[A] {
 
 ```scala
 sealed trait Col[A] {
-  def size: Int
-  def concat(as: Col[A]): Col[A]
-  def reverse: Col[A]
-  def map[B](f: A => B): Col[B]
-  def filter(p: A => Boolean): Col[A]
-  def forall(p: A => Boolean): Boolean
-  def exists(p: A => Boolean): Boolean
-  def fold[B](b: B)(f: (B, A) => B): B
+  def size: Int = ???
+  def concat(as: Col[A]): Col[A] = ???
+  def reverse: Col[A] = ???
+  def map[B](f: A => B): Col[B] = ???
+  def filter(p: A => Boolean): Col[A] = ???
+  def forall(p: A => Boolean): Boolean = ???
+  def exists(p: A => Boolean): Boolean = ???
+  def fold[B](b: B)(f: (B, A) => B): B = ???
 }
 
-case class Nil[A]() extends Col[A]
+case class Empty[A]() extends Col[A]
 case class OneAnd[A](a: A, tail: Col[A]) extends Col[A]
 ```
 
@@ -298,72 +298,137 @@ By default, type parameters are **invariant**
 
 ## Exercise
 
-* Make the `List` class covariant
-
+* Make the `Col[A]` type covariant
 
 
 # Type Classes and Implicit Parameters
 
-## Motivating Problem
+## Motivation
 
-Remember the `sum` method of `IntList`?
+Remember the `sum` and `stack` methods:
 
 ```scala
-def sumInts(xs: List[Int]): Int = xs.fold(0)(_ + _)
+def sum(xs: Seq[Int]): Int = xs.foldLeft(0)(_ + _)
 ```
 
-What if we want to compute the sum of a list of complex numbers?
-
 ```scala
-def sumComplexes(zs: List[Complex]): Complex =
-  zs.fold(new Complex(0, 0))(_ add _)
+def stack(is: Seq[Image]): Image =
+  is.foldLeft(Circle(0).lineColor(Color.white))(_ on _)
 ```
 
-- Can we abstract over the similarities of `sumInts` and `sumComplexes`?
+> - Can you capture the ability for a type to have an identity element and to be combined through a binary operation?
 
-## Motivating Problem (2)
+## Motivation (2)
 
-```scala
+~~~ scala
+def genericSum(ss: Seq[Sumable]): Sumable =
+  ss.foldLeft(???)((acc, a) => acc + a)
+~~~
+
+~~~ scala
+trait Sumable {
+  def + (that: Sumable): Sumable
+}
+~~~
+
+~~~ scala
+val sumImages = genericSum(Seq(Circle(10), Circle(20)))
+~~~
+
+> - Problem: `genericSum` returns a `Sumable` instead of an `Image`
+
+## Motivation (3)
+
+~~~ scala
+def genericSum[A <: Sumable](ss: Seq[A]): A =
+  ss.foldLeft(???)((acc, a) => acc + a)
+~~~
+
+~~~ scala
+class Image extends Sumable {
+  def + (that: Sumable): Sumable = this on that
+  def on(that: Image): Image = ???
+}
+~~~
+
+> - Problem: `Sumable` forces to return a `Sumable` instead of an `Image`
+
+## Motivation (4)
+
+~~~ scala
+def genericSum[A <: Sumable[A]](ss: Seq[A]): A =
+  ss.foldLeft(???)((acc, a) => acc + a)
+~~~
+
+~~~ scala
 trait Sumable[A <: Sumable[A]] {
   def + (that: A): A
 }
+~~~
 
-def sum[A <: Sumable[A]](as: List[A], zero: A): A =
-  as.fold(zero)(_ + _)
-```
-
-We can change the implementation of `Complex` to extend `Sumable[Complex]`:
-
-```scala
-trait Complex extends Sumable[Complex] {
-  def + (that: Complex) = add(that)
-  …
+~~~ scala
+class Image extends Sumable[Image] {
+  def + (that: Image): Image = this on that
+  def on(that: Image): Image = ???
 }
+~~~
+
+> - Problem: we can not automatically get the `zero` value for a given `Sumable` type
+
+## Motivation (5)
+
+~~~ scala
+def genericSum[A <: Sumable[A]](zero: A, ss: Seq[A]): A =
+  ss.foldLeft(zero)((acc, a) => acc + a)
+~~~
+
+~~~ scala
+val sumImages = genericSum(
+  Circle(0).lineColor(Color.white),
+  Seq(Circle(10), Circle(20))
+)
+
+val sumInts = genericSum(0, Seq(1, 2, 3))
+~~~
+
+> - Problem: `Int` does not extend `Sumable`
+
+## Motivation (6)
+
+Let’s recap our goals:
+
+- Capture the ability for a type to **both** have a identity element and to be combined through a binary operation
+- **Retroactively** add this ability to any type
+
+## Toward Type Classes
+
+```scala
+def sum(xs: Seq[Int]): Int =
+  xs.foldLeft(0)(_ + _)
 ```
 
 ```scala
-val zs = List(new Complex(1, 2), new Complex(3, 4))
-sum(zs, new Complex(0, 0))
+def stack(is: Seq[Image]): Image =
+  is.foldLeft(Circle(0).lineColor(Color.white))(_ on _)
 ```
 
-## Motivating Problem (3)
-
-- We can not change the implementation of `Int` to make it extend `Sumable[Int]`
-
-- Anyway, this `Sumable` trait captures only a part of the problem: we still need to manually supply the identity element corresponding to each type
+~~~ scala
+def genericSum[A](as: Seq[A], zero: A, combine: (A, A) => A): A =
+  as.foldLeft(zero)(combine)
+~~~
 
 ## (Almost) Type Classes
 
 ```scala
 trait Sumable[A] {
   def zero: A
-  def append(a1: A, a2: A): A
+  def combine(a1: A, a2: A): A
 }
 ```
 
 ```scala
-def sum[A](as: List[A], A: Sumable[A]) =
-  as.fold(A.zero)(A.append)
+def genericSum[A](as: Seq[A], sumable: Sumable[A]) =
+  as.foldLeft(sumable.zero)(sumable.combine)
 ```
 
 ## Retroactive Extension
@@ -371,63 +436,63 @@ def sum[A](as: List[A], A: Sumable[A]) =
 ```scala
 val sumableInt = new Sumable[Int] {
   val zero = 0
-  def append(a1: Int, a2: Int) = a1 + a2
+  def combine(a1: Int, a2: Int) = a1 + a2
 }
 ```
 
 ```scala
-val xs = List(1, 2, 3, 4)
-sum(xs, sumableInt)
+val xs = Seq(1, 2, 3, 4)
+genericSum(xs, sumableInt)
 ```
 
 ## Retroactive Extension (2)
 
 ```scala
-val sumableComplex = new Sumable[Complex] {
-  val zero = new Complex(0, 0)
-  def append(a1: Complex, a2: Complex) = a1.add(a2)
+val sumableImage = new Sumable[Image] {
+  val zero = Circle(0).lineColor(Color.white)
+  def combine(a1: Complex, a2: Complex) = a1 on a2
 }
 ```
 
 ```scala
-val zs = List(new Complex(1, 2), new Complex(3, 4))
-sum(zs, sumableComplex)
+val images = Seq(Circle(10), Circle(20))
+genericSum(images, sumableImage)
 ```
 
 ## (Almost) Type Classes (2)
 
-- The `Sumable[A]` trait captures everything we need to make a sum of a list of `A` (the identity element and the binary operation)
+- The `Sumable[A]` trait captures everything we need to compute the “sum” of a sequence of `A` values (the identity element and the binary operation)
 
 - However, we need to explicitly supply the instance corresponding to each type
 
     - To compute a sum of `Int` we explicitly pass `sumableInt`
 
-    - To compute a sum of `Complex` we explicitly pass `sumableComplex`
+    - To compute a sum of `Image` we explicitly pass `sumableImage`
 
 ## Implicit Parameters
 
 ```scala
-def sum[A](as: List[A])(implicit A: Sumable[A]) =
-  as.fold(A.zero)(A.append)
+def genericSum[A](as: List[A])(implicit sumable: Sumable[A]) =
+  as.foldLeft(sumable.zero)(sumable.combine)
 ```
 
-`sum` takes an **implicit parameter** of type `Sumable[A]`
+`genericSum` takes an **implicit parameter** of type `Sumable[A]`
 
-If you define `sumableInt` and `sumableComplex` as **implicit values** you can omit to supply them when calling `sum`:
+If you define `sumableInt` and `sumableImage` as **implicit values** you can omit to supply them when calling `genericSum`:
 
 ```scala
-implicit val sumableInt = …
-implicit val sumableComplex = …
+implicit val sumableInt: Sumable[Int] = …
+implicit val sumableImage: Sumable[Image] = …
 ```
 
 ```scala
-sum(xs)
-sum(zs)
+genericSum(xs)
+genericSum(images)
 ```
 
 ## Implicit Parameters (2)
 
-If you call a method without supplying its implicit parameters, the compiler tries to resolve them in the **implicit scope**
+If you call a method without supplying its implicit parameters, the compiler tries to resolve them from the **implicit scope**
 
 The implicit scope is basically built using (by order of priority, highest first):
 
@@ -440,17 +505,18 @@ The implicit scope is basically built using (by order of priority, highest first
 ## Context Bounds
 
 ```scala
-def sum[A : Sumable](as: List[A]) = {
-  val A = implicitly[Sumable[A]]
-  xs.fold(A.zero)(A.append)
+def genericSum[A : Sumable](as: List[A]) = {
+  val sumable = implicitly[Sumable[A]]
+  xs.fold(sumable.zero)(sumable.combine)
 }
 ```
 
 - `A : F` expands to an implicit parameter of type `F[A]`
-
 - We say that `F` is a **context bound** for `A`
-
-- You can retrieve an implicit parameter using the `implicitly` helper
-
+- You can retrieve an implicit parameter using the `implicitly` method
 - Sometimes the context bound notation is shorter than using an implicit parameter list
 
+## Exercise
+
+- Define a type class `Show[A]` that captures the ability to compute an image for a given value
+- Implement an instance of `Show[FitnesDevice]`

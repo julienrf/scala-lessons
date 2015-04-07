@@ -14,6 +14,10 @@ object Collections {
    */
   def lengths(ss: Seq[String]): Seq[Int] = ???
 
+  def sum(xs: Seq[Int]): Int = ???
+
+  def product(xs: Seq[Int]): Int = ???
+
   /**
    * Define a method that takes a sequence of Mat and returns their areas if this one is greater than 1000
    */
@@ -33,10 +37,6 @@ object Collections {
   def spiral(n: Int): Seq[Image] = ???
 
   def spiralRec(n: Int): Seq[Image] = ???
-
-  def sum(xs: Seq[Int]): Int = ???
-
-  def product(xs: Seq[Int]): Int = ???
 
   def stack(images: Seq[Image]): Image = ???
 
