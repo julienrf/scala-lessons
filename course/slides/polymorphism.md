@@ -123,7 +123,7 @@ sealed trait Col[A] {
   def filter(p: A => Boolean): Col[A] = ???
   def forall(p: A => Boolean): Boolean = ???
   def exists(p: A => Boolean): Boolean = ???
-  def fold[B](b: B)(f: (B, A) => B): B = ???
+  def fold[B](b: B)(f: (A, B) => B): B = ???
 }
 
 case class Empty[A]() extends Col[A]
