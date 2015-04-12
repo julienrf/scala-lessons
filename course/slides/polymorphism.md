@@ -199,7 +199,7 @@ Similarly, you can constraint a type parameter `A` to have a **lower bound** `B`
 Consider the following type modeling a zoo run containing an animal:
 
 ```scala
-abstract class Run[A] {
+trait Run[A] {
   def get: A // Get the animal that lives in this run
 }
 ```
@@ -235,7 +235,7 @@ More generally, `Run[A] <: Run[B]` if `A <: B`
 We say that `A` is **covariant** in `Run[A]` and we can tell it to the compiler as follows:
 
 ```scala
-abstract class Run[+A] {
+trait Run[+A] {
   def get: A
 }
 ```
@@ -247,7 +247,7 @@ Now the compiler accepts that you pass a `Run[Zebra]` where a `Run[Mammal]` is e
 Consider the following type modeling a veterinary able to treat animals:
 
 ```scala
-abstract class Vet[A] {
+trait Vet[A] {
   def treat(a: A)
 }
 ```
@@ -283,7 +283,7 @@ More generally, `Vet[A] <: Vet[B]` if `A >: B`
 We say that `A` is **contravariant** in `Run[A]` and we can tell it to the compiler as follows:
 
 ```scala
-abstract class Vet[-A] {
+trait Vet[-A] {
   def treat(a: A)
 }
 ```
