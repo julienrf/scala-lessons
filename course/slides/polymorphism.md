@@ -29,9 +29,9 @@ def boolIdentity(b: Boolean): Boolean = b
 def stringIdentity(s: String): String = s
 ~~~
 
-> - How to write a general `identity` function that works with any type?
+> - How to write a general `identity` method that works with any type?
 
-## Polymorphic Functions
+## Polymorphic Methods
 
 Look at the type signatures of `intIdentity`, `boolIdentity` and `stringIdentity`:
 
@@ -47,15 +47,15 @@ It always follows this pattern:
 A       => A
 ```
 
-## Polymorphic Functions (2)
+## Polymorphic Methods (2)
 
-Functions can have **type parameters**:
+Methods can have **type parameters**:
 
 ```scala
 def identity[A](a: A): A = a
 ```
 
-- `A` is a **type parameter** (**universally** quantified), `identity` is a **polymorphic function**
+- `A` is a **type parameter** (**universally** quantified), `identity` is a **polymorphic method**
 
 You can then call `identity` as follows:
 
