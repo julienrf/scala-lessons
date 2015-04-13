@@ -518,5 +518,21 @@ def genericSum[A : Sumable](as: List[A]) = {
 
 ## Exercise
 
+- Implement the following generic `sum` method:
+
+~~~ scala
+def sum[A](as: Seq[A])(implicit numeric: Numeric[A]): A
+~~~
+
+## Exercise
+
+- Implement an instance of `Ordering[Mat]` that compares the area of the mats:
+
+~~~ scala
+implicit val matOrdering: Ordering[Mat] = ???
+~~~
+
+## Exercise
+
 - Define a type class `Show[A]` that captures the ability to compute an image for a given value
 - Implement an instance of `Show[FitnesDevice]`
