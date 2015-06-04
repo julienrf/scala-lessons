@@ -1,122 +1,3 @@
-# Handling Failure
-
-## Motivation
-
-Remember the `lighten` method:
-
-~~~ scala
-def lighten = Barbell(load - 10, length - 20)
-~~~
-
-> - What happens if the `load` or the `length` becomes zero or less?
-> - Do you want `lighten` to be **defined** for **all** values of `Barbell`?
-
-## `Option`
-
-A way to model the fact that a given barbell may not have a lighter barbell is to use the `Option` type:
-
-~~~ scala
-def lighten: Option[Barbell] =
-  if (load <= 15 || length <= 100) None
-  else Some(Barbell(load - 10, length - 20))
-~~~
-
-- The standard library defines the type `Option[A]` that models an optional value of type `A`
-- An `Option[A]` value can either be:
-    - `Some(a)`
-    - `None`
-
-## Exercise
-
-- Add a `smaller` method to the `Mat` type:
-
-~~~ scala
-def smaller: Option[Mat] = ???
-~~~
-
-## Common Patterns with Optional Values
-
-`Option` values can be manipulated using pattern matching:
-
-~~~ scala
-def lighterBarbell(barbell: Barbell): String =
-  barbell.lighten match {
-    case Some(barbell) => "there is a lighter barbell"
-    case None => "there is no lighter barbell"
-  }
-~~~
-
-## Common Patterns With Optional Values
-
-Use `map` to transform a successful value into another successful value, ignoring the `None` case:
-
-```scala
-def smallerWidth(mat: Mat): Option[Int] =
-  mat.smaller.map(smallerMat => smallerMat.width)
-```
-
-## Common Patterns With Optional Values (2)
-
-Use `filter` to turn a successful value into a failure if it does not satisfy a given predicate:
-
-```scala
-def keepHugeMats(maybeMat: Option[Mat]): Option[Mat] =
-  maybeMat.filter(mat => mat.width > 100 && mat.length > 200)
-```
-
-## Exercise
-
-- Write a method that takes a `Mat` as parameter, tries to get a smaller mat and returns its area only if it is higher than 1000:
-
-~~~ scala
-def smallerButLargeEnough(mat: Mat): Option[Int] = ???
-~~~
-
-<!--
-def smallerButLargeEnough(mat: Mat): Option[Int] =
-  mat.smaller
-    .map(smallerMat => smallerMat.width * smallerMat.length)
-    .filter(area => area > 1000)
--->
-
-## Common Patterns With Optional Values (3)
-
-Use `flatMap` to transform a successful value into an optional value:
-
-```scala
-def smallerSmaller(mat: Mat): Option[Mat] =
-  mat.smaller.flatMap(smallerMat => smallerMat.smaller)
-```
-
-## Sequencing Computations Manipulating Optional Values
-
-`flatMap` and `map` are used to sequence computations operating on optional values:
-
-```scala
-def lightenLightenLoad(barbell: Barbell): Option[Int] =
-  barbell.lighten.flatMap { lighterBarbell =>
-    lighterBarbell.lighten.map { lighterLighterBarbell =>
-      lighterLighterBarell.load
-    }
-  }
-```
-
-(We will see a more expressive way of expressing such computations, soon)
-
-## `Try`
-
-- `Try[A]` is _similar_ to `Option[A]` excepted that in case of failure it provides more information. It can either be:
-    - `Success(a)`
-    - `Failure(throwable)`
-
-## Common Patterns with `Try[A]` Values
-
-- Like `Option[A]`, `Try[A]` has `map`, `filter` and `flatMap`
-
-<!--
-TODO Exceptions try/catch
--->
-
 # Standard Collections
 
 ## Standard Collections
@@ -158,10 +39,79 @@ mats :+ Mat(80, 40)
 
 ~~~ scala
 def size(mats: Seq[Mat]): Int = mats match {
-  case Nil         => 0
-  case mat +: mats => 1 + size(mats)
+  case Nil => 0
+  case mat +: matsTail => 1 + size(matsTail)
 }
 ~~~
+
+## Exercise
+
+- Define a `circles` method that returns a collection of concentric circles:
+
+~~~ scala
+def circles(n: Int): Seq[Circle] = ???
+~~~
+
+<!--
+def circles(n: Int): Seq[Circle] = {
+  val unit = Circle(25 + 15 * n)
+  if (n == 1) Seq(unit)
+  else circles(n - 1) :+ unit
+}
+-->
+
+## Exercise
+
+- Do the same for `spiral`:
+
+~~~ scala
+def spiral(n: Int): Seq[Image] = ???
+~~~
+
+<!--
+def spiral(n: Int): Seq[Circle] = {
+  val size = 10 + n * 2
+  val dist = 50 + n * 5
+  val angle = Angle.degrees((n * 36) % 360)
+  val unit = Circle(size).at(dist * angle.sin, dist * angle.cos)
+  if (n == 1) Seq(unit)
+  else unit +: spiral(n - 1)
+}
+-->
+
+## Exercise
+
+- Define a `stack` method that takes a sequence of images as parameter and returns an image stacking them one on the other:
+
+~~~ scala
+def stack(images: Seq[Image]): Image = ???
+~~~
+
+<!--
+def stack(images: Seq[Image]): Image = images match {
+  case Nil => emptyImage
+  case image +: images => image on stack(images)
+}
+-->
+
+## Exercise
+
+- Define a method that takes a sequence of `Mat` and returns their areas if this one is greater than 1000
+
+~~~ scala
+def largeEnough(mats: Seq[Mat]): Seq[Int] = ???
+~~~
+
+<!--
+def largeEnough(mats: Seq[Mat]): Seq[Int] =
+  mats match {
+    case Nil => Nil
+    case mat +: matsTail =>
+      val area = mat.width * mat.length
+      if (area > 1000) area +: largeEnough(matsTail)
+      else largeEnough(matsTail)
+  }
+-->
 
 ## First Steps (4)
 
@@ -171,7 +121,7 @@ def size(mats: Seq[Mat]): Int = mats match {
 val areas = mats.map(mat => mat.width * mat.length)
 ~~~
 
-- `map` takes a function and returns a sequence whose elements are the result of the function applied to the sequence elements
+- `map` takes a **function** and returns a sequence whose elements are the result of the function applied to the sequence elements
 - `areas` has type `Seq[Int]`
 
 ## First Steps (5)
@@ -186,11 +136,7 @@ val largerThanOneHundred = mats.filter(mat => mat.width > 100)
 
 ## Exercise
 
-- Define a method that takes a sequence of `Mat` and returns their areas if this one is greater than 1000
-
-~~~ scala
-def largeEnough(mats: Seq[Mat]): Seq[Int] = ???
-~~~
+- Rewrite `largeEnough` using `map` and `filter`
 
 <!--
 def largeEnough(mats: Seq[Mat]): Seq[Int] =
@@ -337,21 +283,9 @@ val xs = Map("foo" -> 42, "bar" -> 10, "baz" -> 0)
 
 ## Exercise
 
-- Change the `circles` method so that it returns a collection of concentric circles:
-
-~~~ scala
-def circles(n: Int): Seq[Circle] = ???
-~~~
-
-- Note: write to different implementations: a recursive and a non-recursive one.
+- Rewrite the `circles` method using `map`
 
 <!--
-def circles(n: Int): Seq[Circle] = {
-  val unit = Circle(25 + 15 * n)
-  if (n == 1) Seq(unit)
-  else circles(n - 1) :+ unit
-}
-
 def circles(count: Int) =
   (1 to count) map { n =>
     Circle(25 + 15 * n)
@@ -360,11 +294,7 @@ def circles(count: Int) =
 
 ## Exercise
 
-- Do the same for `spiral`:
-
-~~~ scala
-def spiral(n: Int): Seq[Image] = ???
-~~~
+- Rewrite the `spiral` method using `map`
 
 <!--
 def spiral(count: Int) =
@@ -378,33 +308,128 @@ def spiral(count: Int) =
 
 ## Exercise
 
-- Change the `stack` method to the following:
-
-~~~ scala
-def stack(images: Seq[Image]): Image = ???
-~~~
-
-- Note: write a recursive implementation and a non-recursive implementation
+- Rewrite the `stack` method using `foldLeft`
 
 <!--
-def stack(images: Seq[Image]): Image = images match {
-  case Nil => emptyImage
-  case image +: images => image on stack(images)
-}
-
 def stack(images: Seq[Image]): Image =
   images.foldLeft(emtyImage)((image, result) => image on result)
 -->
 
-## Exercise
+# Handling Failure
 
-- Change the `layout` method to the following:
+## Motivation
+
+Remember the `lighten` method:
 
 ~~~ scala
-def layout(op: (Image, Image) => Image, images: Seq[Image]): Image = ???
+def lighten = Barbell(load - 10, length - 20)
+~~~
+
+> - What happens if the `load` or the `length` becomes zero or less?
+> - Do you want `lighten` to be **defined** for **all** values of `Barbell`?
+
+## `Option`
+
+A way to model the fact that a given barbell may not have a lighter barbell is to use the `Option` type:
+
+~~~ scala
+def lighten: Option[Barbell] =
+  if (load <= 15 || length <= 100) None
+  else Some(Barbell(load - 10, length - 20))
+~~~
+
+- The standard library defines the type `Option[A]` that models an optional value of type `A`
+- An `Option[A]` value can either be:
+    - `Some(a)`
+    - `None`
+
+## Exercise
+
+- Add a `smaller` method to the `Mat` type:
+
+~~~ scala
+def smaller: Option[Mat] = ???
+~~~
+
+## Common Patterns with Optional Values
+
+`Option` values can be manipulated using pattern matching:
+
+~~~ scala
+def lighterBarbell(barbell: Barbell): String =
+  barbell.lighten match {
+    case Some(barbell) => "there is a lighter barbell"
+    case None => "there is no lighter barbell"
+  }
+~~~
+
+## Common Patterns With Optional Values
+
+Use `map` to transform a successful value into another successful value, ignoring the `None` case:
+
+```scala
+def smallerWidth(mat: Mat): Option[Int] =
+  mat.smaller.map(smallerMat => smallerMat.width)
+```
+
+## Common Patterns With Optional Values (2)
+
+Use `filter` to turn a successful value into a failure if it does not satisfy a given predicate:
+
+```scala
+def keepHugeMats(maybeMat: Option[Mat]): Option[Mat] =
+  maybeMat.filter(mat => mat.width > 100 && mat.length > 200)
+```
+
+## Exercise
+
+- Write a method that takes a `Mat` as parameter, tries to get a smaller mat and returns its area only if it is higher than 1000:
+
+~~~ scala
+def smallerButLargeEnough(mat: Mat): Option[Int] = ???
 ~~~
 
 <!--
-def layout(op: (Image, Image) => Image, images: Seq[Image]): Image =
-  images.foldLeft(emptyImage)(op)
+def smallerButLargeEnough(mat: Mat): Option[Int] =
+  mat.smaller
+    .map(smallerMat => smallerMat.width * smallerMat.length)
+    .filter(area => area > 1000)
+-->
+
+## Common Patterns With Optional Values (3)
+
+Use `flatMap` to transform a successful value into an optional value:
+
+```scala
+def smallerSmaller(mat: Mat): Option[Mat] =
+  mat.smaller.flatMap(smallerMat => smallerMat.smaller)
+```
+
+## Sequencing Computations Manipulating Optional Values
+
+`flatMap` and `map` are used to sequence computations operating on optional values:
+
+```scala
+def lightenLightenLoad(barbell: Barbell): Option[Int] =
+  barbell.lighten.flatMap { lighterBarbell =>
+    lighterBarbell.lighten.map { lighterLighterBarbell =>
+      lighterLighterBarell.load
+    }
+  }
+```
+
+(We will see a more concise way of expressing such computations, soon)
+
+## `Try`
+
+- `Try[A]` is _similar_ to `Option[A]` excepted that in case of failure it provides more information. It can either be:
+    - `Success(a)`
+    - `Failure(throwable)`
+
+## Common Patterns with `Try[A]` Values
+
+- Like `Option[A]`, `Try[A]` has `map`, `filter` and `flatMap`
+
+<!--
+TODO Exceptions try/catch
 -->

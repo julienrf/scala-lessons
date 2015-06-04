@@ -194,6 +194,13 @@ def add(real: Double): Complex = add(new Complex(real, 0)
     - Algebraic data types are closed types (they can not be extended), but this characteristic is what makes it easier to add new operations on a type hierarchy
     - Classes are open types (they can be extended), but you can not add a new operation on a class hierarchy without changing the whole hierarchy
 
+## Exercise
+
+- Define a library that allows developpers to define arithmetic expressions and to evaluate them
+- Write two implementations: one that focuses on the information (e.g. addition) and one that focuses on the capabilities (e.g. evaluation)
+- Add new capabilities to both implementations (e.g. pretty printing an expression)
+- Add new arithmetic operations to both implementations (e.g. multiplication)
+
 ## Components
 
 You saw how to implement a set of features in a single component using classes

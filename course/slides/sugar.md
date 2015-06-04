@@ -102,46 +102,6 @@ def sum = fold(0, _ + _)
 def product = fold(1, _ * _)
 ```
 
-## Currying and Partial Application
-
-```scala
-def add(a: Int, b: Int) = a + b
-
-add(3, 4) // 7
-```
-
-An equivalent computation could be the following:
-
-```scala
-def add(a: Int) = (b: Int) => a + b
-
-add(3)(4) // 7
-```
-
-The first version takes two numbers as parameters and returns a number
-
-The second version takes one number as parameter and returns a function that takes the second number and returns their sum
-
-We say that the second version is a **curried** function
-
-## Currying and Partial Application (2)
-
-Curried functions can be partially applied:
-
-```scala
-scala> val inc = add(1)
-inc: Int => Int = <function1>
-
-scala> inc(5)
-res0: Int = 6
-```
-
-Alternatively, you can write the curried version using several **parameters lists**:
-
-```scala
-def add(a: Int)(b: Int) = a + b
-```
-
 ## Tuples
 
 Classes can combine several values together

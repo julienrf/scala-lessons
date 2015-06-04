@@ -132,6 +132,28 @@ def name(fitnessDevice: FitnessDevice): String = fitnessDevice match {
 def fitnessDeviceImage(fitnessDevice: FitnessDevice): Image = ???
 ~~~
 
+## Modeling the World
+
+The combination of case classes and sealed trait gives a convenient way to model information in terms of **is** and **has** relationships:
+
+- “a fitness device *is* a barbell *or* a mat”
+    - `FitnessDevice` sealed trait extended by `Barbell` and `Mat`
+- “a barbell *has* a load *and* a length”
+    - `Barbell` case class with `load` and `length` members
+- “a mat *has* a width *and* a length”
+    - `Mat` case class with `width` and `length` members
+
+## Exercise
+
+- Define data types modeling 
+
+## Exercise
+
+- Define data types modeling arithmetic expressions
+- An expression is either a number or an addition
+- A number has a numeric value
+- An addition has a left-hand side expression and a right-hand side expression
+
 ## Syntax Summary
 
 ~~~ scala
