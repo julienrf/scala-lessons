@@ -1,3 +1,20 @@
+# Start programming
+
+## Read-Eval-Print Loop
+
+The quickest way to try Scala is to use the REPL (Read-Eval-Print-Loop)
+
+```bash
+$ sbt console
+Welcome to Scala version 2.11.5 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_40).
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> 
+```
+
+(Check that [sbt](http://www.scala-sbt.org) is installed on your system)
+
 # Values and Types
 
 ## What is a program made of?
