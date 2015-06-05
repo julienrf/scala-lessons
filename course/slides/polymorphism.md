@@ -280,7 +280,7 @@ A `Vet[Animal]` is not a subtype of `Vet[Mammal]`, they are just two different t
 
 More generally, `Vet[A] <: Vet[B]` if `A >: B`
 
-We say that `A` is **contravariant** in `Run[A]` and we can tell it to the compiler as follows:
+We say that `A` is **contravariant** in `Vet[A]` and we can tell it to the compiler as follows:
 
 ```scala
 trait Vet[-A] {
