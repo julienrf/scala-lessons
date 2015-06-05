@@ -145,14 +145,44 @@ The combination of case classes and sealed trait gives a convenient way to model
 
 ## Exercise
 
-- Define data types modeling 
+- Model the following domain in Scala:
+    - A geometric shape *is* a circle *or* a rectangle *or* a triangle,
+    - A circle *has* a radius,
+    - A rectangle *has* a width *and* a height,
+    - A triangle *has* a width *and* a height.
 
 ## Exercise
 
-- Define data types modeling arithmetic expressions
-- An expression is either a number or an addition
-- A number has a numeric value
-- An addition has a left-hand side expression and a right-hand side expression
+- Model the following domain in Scala:
+    - A course *has* a name *and* a difficulty level
+    - A difficulty level *is* either “beginner”, “intermediate” *or* “advanced”
+
+- Can you then define a course named “Programming in Scala” targetting beginners?
+
+## Case Objects
+
+~~~ scala
+sealed trait DifficultyLevel
+case class Beginner() extends DifficultyLevel
+case class Intermediate() extends DifficultyLevel
+case class Advanced() extends DifficultyLevel
+~~~
+
+If a case class has no parameter, just use a **case object** instead:
+
+~~~ scala
+sealed trait DifficultyLevel
+case object Beginner extends DifficultyLevel
+case object Intermediate extends DifficultyLevel
+case object Advanced extends DifficultyLevel
+~~~
+
+## Exercise
+
+- Model the following domain in Scala:
+    - An expression is either a number or an addition
+    - A number has a numeric value
+    - An addition has a left-hand side expression and a right-hand side expression
 
 ## Syntax Summary
 
@@ -173,11 +203,3 @@ case class <name3>(…) extends <name1>
   case <name3>(…) => <expr>
 }
 ~~~
-
-## Exercise
-
-- Model the following domain in Scala:
-    - A geometric shape *is* a circle *or* a rectangle *or* a triangle,
-    - A circle *has* a radius,
-    - A rectangle *has* a width *and* a height,
-    - A triangle *has* a width *and* a height.
