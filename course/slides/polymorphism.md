@@ -535,4 +535,4 @@ implicit val matOrdering: Ordering[Mat] = ???
 ## Exercise
 
 - Define a type class `Show[A]` that captures the ability to compute an image for a given value
-- Implement an instance of `Show[FitnesDevice]`
+- Implement an instance of `Show[FitnessDevice]`
